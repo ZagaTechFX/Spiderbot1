@@ -1,15 +1,25 @@
 import { UTCTimestamp } from 'lightweight-charts';
 
 export type Theme = 'light' | 'dark';
+export type UserRole = 'user' | 'admin';
 
 export interface User {
   id: string;
+  username: string;
+  role: UserRole;
   name: string;
   email: string;
   avatarUrl: string;
   kycStatus: 'Verified' | 'Pending' | 'Rejected' | 'Not Submitted';
   subscriptionPlan: string;
   lastLogin: string;
+}
+
+export interface AuthContextType {
+  user: User | null;
+  login: (username: string, password: string) => Promise<boolean>;
+  logout: () => void;
+  isAuthenticated: boolean;
 }
 
 export interface KpiCardData {
