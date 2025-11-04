@@ -31,8 +31,11 @@ This is a frontend-only application with no backend component. It uses:
 - Imported from GitHub and configured for Replit environment
 - Fixed vite.config.ts to use ES modules (__dirname issue resolved)
 - Changed server port from 3000 to 5000 for Replit compatibility
+- Added `allowedHosts: true` to server config for Replit proxy compatibility
 - Configured HMR client port for proper hot reloading
 - Set up workflow for development server
+- Configured deployment with autoscale target
+- GEMINI_API_KEY environment variable configured for AI features
 
 ## File Organization
 - `/components`: Reusable UI components (Card, Icon, ToggleSwitch, TradingChart)
