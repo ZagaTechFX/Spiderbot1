@@ -2,11 +2,18 @@
 import React, { useState, useContext } from 'react';
 import Card from '../../components/Card';
 import ToggleSwitch from '../../components/ToggleSwitch';
-import { UserStrategy, StrategyTemplate, DcaConfig, GridConfig, AlgoStrategyConfig, CandlestickData, StrategyType } from '../../types';
+import { UserStrategy, StrategyTemplate, DcaConfig, GridConfig, AlgoStrategyConfig, CandlestickData, StrategyType, NormalGridConfig, NormalDCAConfig, TrendFollowingConfig, MeanReversionConfig, VolatilityBreakoutConfig, TradingViewWebhookConfig, DipAnalyserConfig, SignalBotConfig } from '../../types';
 import Icon from '../../components/Icon';
 import TradingChart from '../../components/TradingChart';
 import { ThemeContext } from '../../App';
 import { UTCTimestamp } from 'lightweight-charts';
+import NormalGridConfigPanel from '../../components/strategies/NormalGridConfigPanel';
+import NormalDCAConfigPanel from '../../components/strategies/NormalDCAConfigPanel';
+import TrendFollowingConfigPanel from '../../components/strategies/TrendFollowingConfigPanel';
+import MeanReversionConfigPanel from '../../components/strategies/MeanReversionConfigPanel';
+import VolatilityBreakoutConfigPanel from '../../components/strategies/VolatilityBreakoutConfigPanel';
+import TradingViewWebhookConfigPanel from '../../components/strategies/TradingViewWebhookConfigPanel';
+import DipAnalyserConfigPanel from '../../components/strategies/DipAnalyserConfigPanel';
 
 // --- MOCK DATA ---
 const mockUserStrategies: UserStrategy[] = [
@@ -19,8 +26,15 @@ const mockUserStrategies: UserStrategy[] = [
 const strategyMarketplace = [
     { type: 'Advanced DCA', description: 'A robust strategy that averages down your entry price by placing subsequent buy orders if the price moves against you.', icon: 'arrowDown' },
     { type: 'Advanced Grid', description: 'Uses manual or AI-powered ranges to set up a grid of buy and sell orders to profit from volatility.', icon: 'bot' },
+    { type: 'Normal Grid', description: 'Simplified grid trading bot with basic upper/lower price range and grid count settings for range-bound markets.', icon: 'bot' },
+    { type: 'Normal DCA', description: 'Basic dollar-cost averaging bot with simple safety orders and take profit settings for accumulation strategies.', icon: 'arrowDown' },
     { type: 'Quantitative Strategy', description: 'Deploys advanced algorithmic models like trend-following, mean reversion, or statistical arbitrage.', icon: 'beaker' },
-    { type: 'Signal Bot', description: 'Executes trades based on external signals from sources like TradingView, Telegram, or custom APIs.', icon: 'trades' },
+    { type: 'Signal Bot', description: 'Executes trades based on external signals from sources like TradingView, Telegram, or custom APIs with institutional-grade controls.', icon: 'trades' },
+    { type: 'TradingView Webhook Bot', description: 'Automated trading bot that receives and executes TradingView alerts via webhook with advanced risk management and execution controls.', icon: 'bell' },
+    { type: 'Dip Analyser Bot', description: 'Institutional dip-buying strategy with Smart Money Concepts, structural filters, TWAP execution, and forced accumulation mode.', icon: 'chart' },
+    { type: 'Trend-Following Bot', description: 'EMA Crossover strategy with ATR-based filters and trailing stops for capturing sustained market trends.', icon: 'trending' },
+    { type: 'Mean Reversion Bot', description: 'Z-Score and RSI-based mean reversion strategy for trading oversold/overbought conditions in ranging markets.', icon: 'activity' },
+    { type: 'Volatility Breakout Bot', description: 'Donchian/Keltner channel breakout strategy with time-of-day filters for capturing volatility expansion moves.', icon: 'lightning' },
 ];
 
 const mockStrategyTemplates: StrategyTemplate[] = [
@@ -607,6 +621,27 @@ const StrategiesView: React.FC = () => {
 
     const { theme } = useContext(ThemeContext);
     
+    const getDefaultConfig = (type: StrategyType): any => {
+        switch (type) {
+            case 'Normal Grid':
+                return { marketType: 'SPOT', lowerPrice: 60000, upperPrice: 70000, gridCount: 20, investmentAmount: 1000, gridSpacingType: 'Arithmetic', stopLossPrice: 58000, takeProfitPrice: 72000, leverage: 1, marginMode: 'Isolated' } as NormalGridConfig;
+            case 'Normal DCA':
+                return { marketType: 'SPOT', initialBuy: 100, buyInCallback: 2, takeProfitPercentage: 3, safetyOrderCount: 5, safetyOrderStepPercentage: 2, safetyOrderVolumeMultiplier: 1.5, stopLossPercentage: 10, leverage: 1, marginMode: 'Isolated' } as NormalDCAConfig;
+            case 'Trend-Following Bot':
+                return { marketType: 'SPOT', fastEMAPeriod: 12, slowEMAPeriod: 26, atrPeriod: 14, atrMultiplier: 1.5, positionSize: 5, stopLossATRMultiplier: 2, takeProfitATRMultiplier: 3, trailingStopEnabled: true, leverage: 1, marginMode: 'Isolated' } as TrendFollowingConfig;
+            case 'Mean Reversion Bot':
+                return { marketType: 'SPOT', zScorePeriod: 20, zScoreEntryThreshold: 2, zScoreExitThreshold: 0.5, rsiPeriod: 14, rsiOversold: 30, rsiOverbought: 70, positionSize: 5, stopLossPercentage: 5, takeProfitPercentage: 5, leverage: 1, marginMode: 'Isolated' } as MeanReversionConfig;
+            case 'Volatility Breakout Bot':
+                return { marketType: 'SPOT', breakoutIndicator: 'Donchian', lookbackPeriod: 20, keltnerATRMultiplier: 2, positionSize: 5, stopLossPercentage: 3, takeProfitPercentage: 6, timeOfDayFilterEnabled: false, tradingHoursStart: '09:00', tradingHoursEnd: '16:00', leverage: 1, marginMode: 'Isolated' } as VolatilityBreakoutConfig;
+            case 'TradingView Webhook Bot':
+                return { marketType: 'SPOT', webhookURL: '', alertParser: '{"action": "{{strategy.order.action}}", "ticker": "{{ticker}}"}', signalSourceTrustScore: 7, maximumSlippage: 0.5, orderTimeout: 30, positionSizeOverride: 'Use Signal', fixedPositionSize: 5, dailyLossLimit: 5, maxExchangeAPIRateUsage: 80, orderTypeDefault: 'Market', maxOpenPositions: 5, minimumPositionSize: 10, takeProfitPercentage: 5, stopLossPercentage: 3, globalCapitalAllocation: 50, maxPositionLeverage: 5, dailyTradeCountLimit: 20, ignoreTickersList: '', confirmationWebhookURL: '', logLevel: 'Info', timeZoneSetting: 'UTC', partialFillHandling: 'Wait for Fill', cooldownPeriod: 300, trailingStopActivation: 2, maxDrawdown: 20, exchangeTimeOffset: 0, executionEnvironment: 'Paper Trading', whitelistedIPAddresses: '', maxTradeFeePercentage: 0.1, minimumProfitTarget: 5, strategyTagID: '', accountMode: 'Single', webhookRetryMechanism: 'Exponential Backoff', leverage: 1, marginMode: 'Isolated' } as TradingViewWebhookConfig;
+            case 'Dip Analyser Bot':
+                return { marketType: 'SPOT', dipScoreComponents: { rsiDivergence: true, volumeSpike: true, priceLevelTest: true }, scoreThreshold: 70, minimumDipDepth: 5, timeframeForAnalysis: '4h', buyAggression: 'Moderate', quickProfitTarget: 3, progressiveStop: true, progressiveStopPercentage: 1.5, maximumConcurrentDips: 3, forcedAccumulationMode: false, recoveryConfirmationFilter: 10, liquiditySweepRequirement: false, fvgRetracementPercentage: 50, orderBlockProximityFilter: 1, maxOrderBookSkew: 65, executionSliceSize: 100, twapHorizon: 15, maxCumulativeSlippage: 0.2, dcaTrancheSizeMultiplier: 0.5, dcaProfitExitThreshold: false, dcaProfitExitPercentage: 3, portfolioHedgeRatioAdjustment: 0.1, maxLossFromAverageEntry: 15, assetAllocationHardCap: 30, botHealthCheckInterval: 15, apiPermissionValidation: 'Read/Trade', autoPauseOnNewsEvent: false, newsEventSeverity: 'High', volumeParticipationRate: 1, timeBasedDipInvalidation: 30, minAssetHoldingQuantity: 0, leverage: 1, marginMode: 'Isolated' } as DipAnalyserConfig;
+            default:
+                return {};
+        }
+    };
+    
     const handleSelectForCompare = (id: string) => {
         setComparingIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
     };
@@ -644,9 +679,10 @@ const StrategiesView: React.FC = () => {
         return {};
     };
 
-    const startCreation = (type: StrategyType, initialConf = {}) => {
+    const startCreation = (type: StrategyType, initialConf: any = {}) => {
         setSelectedStrategyType(type);
-        setCurrentConfig(initialConf);
+        const config = Object.keys(initialConf).length > 0 ? initialConf : getDefaultConfig(type);
+        setCurrentConfig(config);
         setView('config');
         setCurrentPair('BTC/USDT');
     };
@@ -695,8 +731,24 @@ const StrategiesView: React.FC = () => {
                 return <DcaBotConfigPanel config={currentConfig} onConfigChange={setCurrentConfig} onSave={handleSaveStrategy} onSaveTemplate={handleSaveTemplate} />;
             case 'Advanced Grid':
                 return <GridBotConfigPanel config={currentConfig} onConfigChange={setCurrentConfig} onSave={handleSaveStrategy} onSaveTemplate={handleSaveTemplate} />;
+            case 'Normal Grid':
+                return <NormalGridConfigPanel config={currentConfig} onConfigChange={setCurrentConfig} onSave={handleSaveStrategy} onSaveTemplate={handleSaveTemplate} />;
+            case 'Normal DCA':
+                return <NormalDCAConfigPanel config={currentConfig} onConfigChange={setCurrentConfig} onSave={handleSaveStrategy} onSaveTemplate={handleSaveTemplate} />;
             case 'Quantitative Strategy':
                 return <QuantitativeStrategyConfigPanel config={currentConfig} onConfigChange={setCurrentConfig} onSave={handleSaveStrategy} onSaveTemplate={handleSaveTemplate} />;
+            case 'Trend-Following Bot':
+                return <TrendFollowingConfigPanel config={currentConfig} onConfigChange={setCurrentConfig} onSave={handleSaveStrategy} onSaveTemplate={handleSaveTemplate} />;
+            case 'Mean Reversion Bot':
+                return <MeanReversionConfigPanel config={currentConfig} onConfigChange={setCurrentConfig} onSave={handleSaveStrategy} onSaveTemplate={handleSaveTemplate} />;
+            case 'Volatility Breakout Bot':
+                return <VolatilityBreakoutConfigPanel config={currentConfig} onConfigChange={setCurrentConfig} onSave={handleSaveStrategy} onSaveTemplate={handleSaveTemplate} />;
+            case 'TradingView Webhook Bot':
+                return <TradingViewWebhookConfigPanel config={currentConfig} onConfigChange={setCurrentConfig} onSave={handleSaveStrategy} onSaveTemplate={handleSaveTemplate} />;
+            case 'Dip Analyser Bot':
+                return <DipAnalyserConfigPanel config={currentConfig} onConfigChange={setCurrentConfig} onSave={handleSaveStrategy} onSaveTemplate={handleSaveTemplate} />;
+            case 'Signal Bot':
+                return <Card><p className="text-gray-600 dark:text-dark-text-secondary">Signal Bot configuration panel coming soon with institutional-grade controls.</p></Card>;
             default:
                 return <Card><p>This strategy is not yet configurable.</p></Card>;
         }

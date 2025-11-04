@@ -84,6 +84,45 @@ This is a frontend-only application with no backend component. It uses:
   - Trade rationale logging
   - Backtest/live skew monitoring
 
+### Strategy Marketplace Expansion (November 4, 2025)
+Expanded from 4 to 11 total strategies with comprehensive configuration panels:
+
+**New Strategies Added:**
+1. **Normal Grid Bot** - Simplified grid trading with basic upper/lower price ranges
+2. **Normal DCA Bot** - Basic dollar-cost averaging with simple safety orders
+3. **TradingView Webhook Bot** - 30+ settings including webhook URL, alert parser, execution controls, compliance
+4. **Dip Analyser Bot** - 40+ institutional settings with Smart Money Concepts, TWAP execution, forced accumulation
+5. **Trend-Following Bot** - EMA Crossover + ATR Filter with trailing stops
+6. **Mean Reversion Bot** - Z-Score + RSI Bands for ranging markets
+7. **Volatility Breakout Bot** - Donchian/Keltner channel breakouts with time-of-day filters
+
+**Implementation Details:**
+- Created `StrategyConfigPanelLayout` component with tabbed interface for complex strategies
+- Added 7 new TypeScript interfaces to `types.ts`:
+  - `NormalGridConfig`, `NormalDCAConfig`
+  - `TrendFollowingConfig`, `MeanReversionConfig`, `VolatilityBreakoutConfig`
+  - `TradingViewWebhookConfig`, `DipAnalyserConfig`, `SignalBotConfig`
+- Created dedicated config panel components in `components/strategies/`:
+  - NormalGridConfigPanel, NormalDCAConfigPanel
+  - TrendFollowingConfigPanel, MeanReversionConfigPanel, VolatilityBreakoutConfigPanel
+  - TradingViewWebhookConfigPanel, DipAnalyserConfigPanel
+- Updated `StrategyType` to include all 11 strategy types
+- Implemented `getDefaultConfig()` function with sensible defaults for each strategy
+- Updated `renderConfigPanel()` to route to appropriate config panels
+
+**Strategy Marketplace Total: 11 Strategies**
+1. Advanced DCA ✅
+2. Advanced Grid ✅
+3. Normal Grid ✅ (NEW)
+4. Normal DCA ✅ (NEW)
+5. Quantitative Strategy ✅ (institutional algorithmic)
+6. Signal Bot ✅
+7. TradingView Webhook Bot ✅ (NEW)
+8. Dip Analyser Bot ✅ (NEW)
+9. Trend-Following Bot ✅ (NEW)
+10. Mean Reversion Bot ✅ (NEW)
+11. Volatility Breakout Bot ✅ (NEW)
+
 ## File Organization
 - `/components`: Reusable UI components (Card, Icon, ToggleSwitch, TradingChart, UserHeader, AdminHeader)
 - `/contexts`: React contexts (AuthContext for authentication state)
