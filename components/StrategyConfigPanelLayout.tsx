@@ -25,8 +25,8 @@ const StrategyConfigPanelLayout: React.FC<StrategyConfigPanelLayoutProps> = ({
 }) => {
     return (
         <div className="bg-white dark:bg-dark-card rounded-lg shadow-sm border border-gray-200 dark:border-dark-border">
-            <div className="p-4 border-b border-gray-200 dark:border-dark-border">
-                <h3 className="text-lg font-bold dark:text-white">{title}</h3>
+            <div className="p-3 sm:p-4 border-b border-gray-200 dark:border-dark-border">
+                <h3 className="text-base sm:text-lg font-bold dark:text-white">{title}</h3>
             </div>
 
             <div className="border-b border-gray-200 dark:border-dark-border overflow-x-auto">
@@ -35,7 +35,7 @@ const StrategyConfigPanelLayout: React.FC<StrategyConfigPanelLayoutProps> = ({
                         <button
                             key={tab.id}
                             onClick={() => onTabChange(tab.id)}
-                            className={`px-4 py-3 text-sm font-medium transition-colors whitespace-nowrap ${
+                            className={`px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-medium transition-colors whitespace-nowrap ${
                                 activeTab === tab.id
                                     ? 'border-b-2 border-primary text-primary dark:text-primary'
                                     : 'text-gray-500 hover:text-gray-700 dark:text-dark-text-secondary dark:hover:text-white'
@@ -47,20 +47,20 @@ const StrategyConfigPanelLayout: React.FC<StrategyConfigPanelLayoutProps> = ({
                 </div>
             </div>
 
-            <div className="p-4 max-h-[60vh] overflow-y-auto">
+            <div className="p-3 sm:p-4 max-h-[60vh] overflow-y-auto">
                 {tabs.find(tab => tab.id === activeTab)?.content}
             </div>
 
-            <div className="p-4 border-t border-gray-200 dark:border-dark-border flex justify-end space-x-3">
+            <div className="p-3 sm:p-4 border-t border-gray-200 dark:border-dark-border flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-3">
                 <button
                     onClick={onSaveTemplate}
-                    className="px-4 py-2 text-sm font-semibold text-gray-700 dark:text-dark-text-secondary bg-gray-100 dark:bg-dark-bg-secondary rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                    className="w-full sm:w-auto px-4 py-2 text-sm font-semibold text-gray-700 dark:text-dark-text-secondary bg-gray-100 dark:bg-dark-bg-secondary rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
                 >
                     Save as Template
                 </button>
                 <button
                     onClick={onSave}
-                    className="px-4 py-2 text-sm font-semibold text-white bg-primary rounded-lg hover:bg-primary-hover transition-colors"
+                    className="w-full sm:w-auto px-4 py-2 text-sm font-semibold text-white bg-primary rounded-lg hover:bg-primary-hover transition-colors"
                 >
                     Save & Start Bot
                 </button>
