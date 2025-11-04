@@ -4,7 +4,11 @@ import { ThemeContext } from '../App';
 import Icon from './Icon';
 import ToggleSwitch from './ToggleSwitch';
 
-const UserHeader: React.FC = () => {
+interface UserHeaderProps {
+  onMenuClick: () => void;
+}
+
+const UserHeader: React.FC<UserHeaderProps> = ({ onMenuClick }) => {
   const { user, logout } = useAuth();
   const { theme, toggleTheme } = React.useContext(ThemeContext);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -25,15 +29,23 @@ const UserHeader: React.FC = () => {
   if (!user) return null;
 
   return (
-    <div className="bg-white dark:bg-dark-card border-b border-gray-200 dark:border-dark-border px-6 py-4">
+    <div className="bg-white dark:bg-dark-card border-b border-gray-200 dark:border-dark-border px-3 sm:px-4 md:px-6 py-3 sm:py-4">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
-          <p className="text-sm text-gray-500 dark:text-dark-text-secondary">Welcome back, {user.name}</p>
+        <div className="flex items-center space-x-3">
+          <button 
+            onClick={onMenuClick}
+            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-bg-secondary lg:hidden"
+          >
+            <Icon name="menu" className="h-6 w-6" />
+          </button>
+          <div>
+            <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
+            <p className="text-xs sm:text-sm text-gray-500 dark:text-dark-text-secondary hidden sm:block">Welcome back, {user.name}</p>
+          </div>
         </div>
 
-        <div className="flex items-center space-x-4">
-          <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-bg-secondary transition-colors relative text-gray-500 dark:text-dark-text-secondary hover:text-gray-700 dark:hover:text-white">
+        <div className="flex items-center space-x-2 sm:space-x-4">
+          <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-bg-secondary transition-colors relative text-gray-500 dark:text-dark-text-secondary hover:text-gray-700 dark:hover:text-white hidden sm:block">
             <Icon name="bell" className="h-5 w-5" />
             <span className="absolute top-1 right-1 h-2 w-2 bg-danger rounded-full"></span>
           </button>
@@ -41,22 +53,22 @@ const UserHeader: React.FC = () => {
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-bg-secondary transition-colors"
+              className="flex items-center space-x-2 sm:space-x-3 p-1 sm:p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-bg-secondary transition-colors"
             >
               <img
                 src={user.avatarUrl}
                 alt={user.name}
-                className="h-8 w-8 rounded-full"
+                className="h-7 w-7 sm:h-8 sm:w-8 rounded-full"
               />
               <div className="text-left hidden md:block">
                 <p className="text-sm font-semibold text-gray-900 dark:text-white">{user.name}</p>
                 <p className="text-xs text-gray-500 dark:text-dark-text-secondary">{user.subscriptionPlan}</p>
               </div>
-              <Icon name="chevron" className={`h-4 w-4 text-gray-500 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
+              <Icon name="chevron" className={`h-4 w-4 text-gray-500 transition-transform hidden sm:block ${isDropdownOpen ? 'rotate-180' : ''}`} />
             </button>
 
             {isDropdownOpen && (
-              <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-lg shadow-lg py-2 z-50">
+              <div className="absolute right-0 mt-2 w-64 sm:w-72 bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border rounded-lg shadow-lg py-2 z-50 max-h-[80vh] overflow-y-auto">
                 <div className="px-4 py-3 border-b border-gray-200 dark:border-dark-border">
                   <div className="flex items-center">
                     <img className="h-10 w-10 rounded-full object-cover mr-3" src={user.avatarUrl} alt={user.name} />
