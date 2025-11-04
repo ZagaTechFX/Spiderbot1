@@ -1,0 +1,116 @@
+Dip Analyser Trading Bot Settings - Settings refined to the core logic.
+
+Setting Name	Input Type	Interpretation & Purpose
+Dip Score Components	Multiple Toggles	Signal Weighting: Components (RSI Divergence, Volume Spike, Price Level Test) are weighted to create a compound "buy-score."
+Score Threshold	Numeric (0-100)	Entry Gate: Minimum weighted score required to confirm a buy signal is valid.
+Minimum Dip Depth	Percentage	Requires a minimum $X\%$ drop from the recent high to ensure the buy is only on a significant correction.
+Timeframe for Analysis	Dropdown	Lookback period (e.g., $4\text{h}$ or $1\text{D}$) used to define the "recent high" for the dip calculation.
+Buy Aggression	Slider (Conservative/Aggressive)	Execution Speed: Controls how quickly the limit/market order is placed after dip confirmation (Conservative = Limit, Aggressive = Market).
+Quick Profit Target	Percentage	Exit Trap: Capitalizes on the initial bounce (e.g., $5\%$) to secure a small gain on the low-cost buy before the long-term accumulation.
+Progressive Stop	Toggle + Percentage	Risk-Free Lock-in: After the Quick Profit Target is hit, implements a trailing stop to protect the accumulated asset value.
+Maximum Concurrent Dips	Numeric	Limits the number of simultaneous dip trades (open buys) to manage capital exposure.
+Forced Accumulation Mode	Toggle (ON/OFF)	Core Logic: When ON, the bot's trade execution engine is hard-locked to prevent any sell orders, enforcing the accumulation strategy.
+
+
+
+🎣 Advanced Dip Analyser Trading Bot Settings
+These additions focus on protecting the purchase quality, managing capital allocation, and ensuring market impact is minimal during large buys.
+I.	Dip Quality and Protection
+
+
+Setting Name	Input Type	Interpretation & Purpose
+Max Order Book Skew at Entry	Percentage	Liquidity Filter: Ensures the dip is genuine (not manipulated). If the volume difference between the bid and ask sides (order book imbalance) exceeds this limit (e.g., $65\%$ on one side), the trade is rejected due to potential manipulation or low liquidity.
+Recovery Confirmation Filter	Percentage (e.g., $10\% \text{ of Dip Recovery}$)	Timing Precision: Requires the price to have recovered a small percentage (e.g., $10\%$) of the total dip depth before placing the buy order. Prevents catching a falling knife by confirming the bottom attempt.
+Minimum Asset Holding Quantity	Numeric	Accumulation Lock: A hard minimum amount of the asset (in shares or coins) that the bot must hold. If an exit signal would violate this quantity, the sell order is reduced or canceled, further enforcing the long-term goal.
+
+II. Execution and Capital Allocation
+Setting Name	Input Type	Interpretation & Purpose
+DCA Tranche Size Multiplier	Numeric (e.g., $0.5 \text{x} \text{ ATR}$)	Risk-Adjusted Sizing: Rather than a fixed $\$$ amount, the dollar-cost average ($\text{DCA}$) purchase size is scaled based on volatility ($\text{ATR}$), meaning smaller buys during calm periods and larger, riskier buys during volatile, deeper dips.
+Volume Participation Rate (VPR)	Percentage (e.g., $1\%$)	Market Impact Control: When placing a buy order, the bot limits the maximum percentage of the current trading volume it accounts for. This prevents the bot's own large buy from immediately pushing the price higher and increasing its cost.
+Time-based Dip Invalidation	Time (Minutes/Hours)	Stale Signal Exit: If the Dip Score is confirmed but the buy order remains unfilled for this duration (e.g., $30$ minutes), the signal is considered stale, and the limit order is automatically canceled.
+
+III. Dynamic Exit Logic (Beyond Quick Profit)
+Setting Name	Input Type	Interpretation & Purpose
+DCA Profit Exit Threshold	Toggle + Percentage	Selective Profit-Taking: If this is ON, the bot will only execute the Quick Profit Target exit on the latest DCA tranche (the low-cost dip buy), while retaining the original, older, potentially loss-making position, to manage overall account health without disrupting the core accumulation goal.
+Portfolio Hedge Ratio Adjustment	Numeric (e.g., $\text{Delta} \pm 0.1$)	Passive Risk Offset: If the bot executes a large dip buy, this setting can automatically initiate a small, offsetting short position in a correlated asset (like an index future) to partially hedge the risk during the initial, volatile recovery phase.
+
+These settings give the Dip Analyser Bot the intelligence needed to operate efficiently, control its influence on the market, and manage risk dynamically in a professional context.
+
+
+
+
+Structural & Advanced Execution Control
+These settings ensure the bot buys at levels of genuine institutional interest and executes large orders discreetly.
+I. Structural Dip Confirmation (SMC Integration)
+These settings move the Dip Analyser beyond simple indicators and confirm the dip is hitting a major structural level that institutions defend.
+Setting Name	Input Type	Interpretation & Purpose
+Liquidity Sweep Requirement	Toggle	Smart Money Filter: Requires the current price dip to have first momentarily breached a very recent, significant swing low (a "liquidity sweep") before confirming the buy signal. This suggests weaker retail stops have been cleared, providing clean entry.
+Fair Value Gap (FVG) Retracement ($\%$ Gap)	Percentage	Price Imbalance Anchor: Requires the dip price to fill a specified percentage (e.g., $50\%$) of a recent Fair Value Gap (an area of market inefficiency). This anchors the dip buy to a precise institutional price target.
+Order Block Proximity Filter	Distance ($\text{ATR}$ Multiple)	Demand Zone Entry: Requires the buy signal to occur within a fixed proximity (e.g., $1.0 \text{x} \text{ ATR}$) of a defined, high-volume Order Block (where institutions previously started a major move).
+
+
+II. Execution Discretion and Cost Control
+These settings manage how the large accumulation orders are executed to prevent the bot from buying against itself.
+Setting Name	Input Type	Interpretation & Purpose
+Execution Slice Size ($\$$ Value)	Numeric	Stealth Trading: Breaks the total buy order into many smaller "slices." The bot only releases one slice at a time to minimize market impact and allow the price to settle between executions.
+Time-Weighted Average Price ($\text{TWAP}$) Horizon	Time (Minutes)	Target Price Execution: If the order is large, the bot uses a $\text{TWAP}$ algorithm, distributing the Execution Slices evenly over this time period (e.g., $15$ minutes) to achieve a price close to the time-weighted average, preventing a spike from a single market order.
+Max Cumulative Slippage ($\text{Per DCA Tranche}$)	Percentage	Cost Control: A running tally of the cost incurred due to slippage across all slices of a single DCA buy. If the total slippage cost exceeds this percentage (e.g., $0.2\%$), the remaining slices of the order are automatically converted to limit orders or cancelled.
+
+
+With the inclusion of these structural and execution-focused settings, your Dip Analyser Trading Bot is now fully equipped with advanced institutional logic to target high-probability reversals and execute them efficiently.
+
+
+🔒 Governance, Security, and Failsafe Settings
+
+Setting Name	Input Type	Interpretation & Purpose
+Max Loss from Average Entry Price ($\%$)	Percentage	Strategy Failsafe: A mandatory risk limit. If the asset price drops $X\%$ below the weighted average entry price of the entire accumulated position, the Forced Accumulation Mode is immediately deactivated, and a manual alert is triggered, preventing unbounded losses in a severe, sustained bear market.
+Asset Allocation Hard Cap ($\%$ of Portfolio)	Percentage	Diversification/Concentration Limit: The absolute maximum percentage of the total portfolio capital that can be deployed into this specific asset (coin/stock), regardless of how many dip opportunities arise. Enforces portfolio diversification.
+Bot Health Check Interval	Time (Minutes)	Operational Monitoring: The frequency at which the bot performs a self-diagnostic check: verifies API connectivity, confirms data feed latency, and checks available margin/fiat balance. Failure triggers a Pause status.
+API Permission Validation	Read-Only Status	Security Check: Displays the required and current API key permissions (e.g., must have Read and Trade but must not have Withdrawal). Essential for confirming compliance and minimizing security risk.
+Auto-Pause on News Event	Toggle + News Severity Dropdown	Event Risk Mitigation: If this is ON, all trading activity is automatically paused/orders canceled $X$ minutes before and after a high-impact news event (e.g., FOMC meeting, CPI release) to avoid unpredictable volatility and liquidity shocks.
+
+By adding these governance and failsafe controls, your Dip Analyser Bot is no longer just a trading algorithm—it is a fully managed, risk-controlled, and compliant investment system.
+
+
+
+
+
+
+
+
+🎯 Consolidated Dip Analyser Trading Bot Settings
+I. Core Strategy & Entry Logic (Initial Settings)
+Setting Name	Input Type	Interpretation & Purpose
+Dip Score Components	Multiple Toggles	Signal Weighting: Components (RSI Divergence, Volume Spike, Price Level Test) are weighted to create a compound "buy-score."
+Score Threshold	Numeric ($0$-$100$)	Entry Gate: Minimum weighted score required to confirm a buy signal is valid.
+Minimum Dip Depth	Percentage	Requires a minimum $X\%$ drop from the recent high to ensure the buy is only on a significant correction.
+Timeframe for Analysis	Dropdown	Lookback period (e.g., $4\text{h}$ or $1\text{D}$) used to define the "recent high" for the dip calculation.
+Recovery Confirmation Filter	Percentage (e.g., $10\% \text{ of Dip}$)	Timing Precision: Requires the price to have recovered a small percentage of the total dip depth before placing the buy order (prevents catching a falling knife).
+II. Structural & Institutional Filters (SMC Integration)
+Setting Name	Input Type	Interpretation & Purpose
+Liquidity Sweep Requirement	Toggle	Smart Money Filter: Requires the dip to momentarily breach a recent swing low before reversal, suggesting weak hands/stops were cleared for a cleaner entry.
+Fair Value Gap ($\text{FVG}$) Retracement ($\%$ Gap)	Percentage	Price Imbalance Anchor: Requires the dip price to fill a specified percentage (e.g., $50\%$) of a recent $\text{FVG}$ (market inefficiency).
+Order Block Proximity Filter	Distance ($\text{ATR}$ Multiple)	Demand Zone Entry: Requires the buy signal to occur near a defined, high-volume Order Block (where institutions previously accumulated).
+Max Order Book Skew at Entry	Percentage	Liquidity Filter: If the bid/ask imbalance exceeds this limit (e.g., $65\%$ on one side), the trade is rejected due to potential manipulation.
+III. Execution, Sizing, and Accumulation Management
+Setting Name	Input Type	Interpretation & Purpose
+Buy Aggression	Slider (Conservative/Aggressive)	Execution Speed: Controls how quickly the limit/market order is placed after dip confirmation.
+Execution Slice Size ($\$$ Value)	Numeric	Stealth Trading: Breaks the total buy order into smaller, time-released "slices" to minimize market impact.
+Time-Weighted Average Price ($\text{TWAP}$) Horizon	Time (Minutes)	Target Price Execution: Distributes execution slices evenly over this period to achieve a price close to the $\text{TWAP}$.
+Max Cumulative Slippage ($\text{Per DCA Tranche}$)	Percentage	Cost Control: If total slippage across all slices exceeds this limit, remaining slices convert to limit orders or are cancelled.
+DCA Tranche Size Multiplier	Numeric (e.g., $0.5 \text{x} \text{ ATR}$)	Risk-Adjusted Sizing: The purchase size is dynamically scaled based on asset volatility ($\text{ATR}$).
+Quick Profit Target	Percentage	Exit Trap: Capitalizes on the initial bounce (e.g., $5\%$) by selling the dip tranche for a quick gain.
+DCA Profit Exit Threshold	Toggle + Percentage	Selective Profit-Taking: Only executes the Quick Profit Target on the latest DCA tranche, retaining the older, core position.
+Progressive Stop	Toggle + Percentage	Risk-Free Lock-in: After the Quick Profit Target is hit, implements a trailing stop to protect the accumulated value of the tranche.
+IV. Failsafe, Governance, and Security (Institutional Oversight)
+Setting Name	Input Type	Interpretation & Purpose
+Forced Accumulation Mode	Toggle ($\text{ON}/\text{OFF}$)	Core Logic: When $\text{ON}$, the bot's trade engine is hard-locked to prevent any sell orders (except for critical risk-offs).
+Max Loss from Average Entry Price ($\%$)	Percentage	Strategy Failsafe: If the price drops $X\%$ below the weighted average entry price of the entire position, the Forced Accumulation Mode is deactivated, forcing a review/exit to cap drawdowns.
+Maximum Concurrent Dips	Numeric	Limits the number of simultaneous dip trades (open buys) to manage temporary capital exposure.
+Asset Allocation Hard Cap ($\%$ of Portfolio)	Percentage	Concentration Limit: The absolute maximum percentage of total capital that can be allocated to this single asset.
+Auto-Pause on News Event	Toggle + News Severity Dropdown	Event Risk Mitigation: Pauses trading $X$ minutes before and after high-impact events (e.g., $\text{CPI}$ or $\text{FOMC}$).
+API Permission Validation	Read-Only Status	Security Check: Displays the API permissions, confirming compliance ($\text{Read} + \text{Trade}$, no $\text{Withdrawal}$).
+Bot Health Check Interval	Time (Minutes)	Operational Monitoring: Frequency for self-diagnostics (API status, latency, margin check). Failure triggers a Pause.
+________________________________________
+This is now a complete, multi-layered system ready for advanced testing and deployment.
+

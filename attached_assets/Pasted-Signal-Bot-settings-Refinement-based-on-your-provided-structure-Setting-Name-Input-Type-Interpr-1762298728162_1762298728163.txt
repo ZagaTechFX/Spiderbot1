@@ -1,0 +1,90 @@
+Signal Bot settings  - Refinement based on your provided structure.
+Setting Name	Input Type	Interpretation & Purpose
+Signal Source	Dropdown (Telegram/Discord/API)	Platform where the non-native signals are received.
+Message Parser	Regex Pattern	Extraction: Custom pattern (Regular Expression) used to extract the key action, asset, and price from a text message signal.
+Provider Trust Score	Numeric (1-10)	Dynamic position sizing based on the signal provider's historical performance.
+Signal Verification Delay	Seconds	Safety: Waits this period after receiving a signal to check for an immediate correction/retraction from the source before executing.
+Maximum Positions	Numeric	Hard limit on the number of concurrent trades this bot can have open.
+Correlation Limit	Percentage	Prevents the bot from taking signals on assets (e.g., BTC and ETH) that are correlated above this threshold simultaneously.
+Auto-Stop on Provider Error	Toggle	Stops bot if the signal provider sends an excessive number of invalid, failed, or non-executable signals.
+Max Order Deviation (%)	Percentage	If the current market price is already $>\text{X}\%$ away from the signaled entry price, the trade is rejected to prevent bad fills.
+
+
+
+
+
+🏛️ Professional & Institutional Setting Additions
+Setting Name	Input Type	Interpretation & Purpose	Context/Area
+Max Portfolio Drawdown (%)	Percentage	Safety: If the total portfolio equity drops this amount from its last peak, all trading is halted and a high-severity alert is triggered. (Hard-coded firm-wide risk limit.)	Portfolio Risk
+Audit Log Verbosity Level	Dropdown (Minimal/Standard/Detailed/Full)	Compliance: Controls the level of detail logged for every action (signal receipt, parsing, rejection reason, order execution, modification, fill details). Full required for most institutional audits.	Compliance & Audit
+Asset Whitelist / Blacklist	Multi-Select/List	Control: A pre-approved, firm-level list of assets/pairs the bot is authorized to trade. Any signal for a non-whitelisted asset is automatically rejected.	Control & Compliance
+Time-of-Day Trading Window	Time Range (e.g., 09:30-16:00 EST)	Operational Control: Defines the exact time window when the bot is authorized to submit new orders, typically aligning with liquid market hours or internal policy.	Operational Control
+Max Daily/Weekly Loss ($ or %)	Dollar or Percentage	Financial Control: Hard limit on the realized/unrealized losses the bot can incur within a specific period. Reaching this triggers an auto-stop for the remainder of the period.	Capital Risk
+
+
+⚙️ Advanced Signal Bot Settings
+Category	Setting Name	Input Type	Interpretation & Purpose
+Order Execution Logic	Order Type Preference	Dropdown (Limit/Market/Post-Only Limit/IOC/FOK)	Defines the type of order placed. Limit is safer, Market is faster but risks slippage. IOC/FOK used for rapid fill/kill.
+	Slippage Tolerance (%)	Percentage	Safety: Maximum acceptable difference between the intended entry price and the actual fill price. If exceeded, the partial/full trade is immediately canceled/rejected.
+	Fill-or-Kill (FOK) Timeout	Milliseconds	For FOK/IOC orders: Maximum time to wait for a full or partial fill before the order is automatically canceled. Essential for high-speed trading.
+	Dynamic Position Sizing Logic	Dropdown (Fixed Amt / % of Balance / Kelly Criterion / VaR)	Determines the capital allocated. Professional systems use advanced formulas (like Kelly or VaR) instead of simple fixed percentages.
+Operational & Health Monitoring	Data Feed Latency Threshold	Milliseconds	Health: If the market data feed (e.g., last price update) is older than this time, the bot pauses new trade execution to prevent basing trades on stale data.
+	Max API Request Rate (per min)	Numeric	Security/Throttling: Limits the number of orders/cancellations sent to the exchange API per minute to avoid being rate-limited, banned, or triggering compliance flags.
+	Emergency Kill Switch API Key	Alphanumeric Key	Critical: A secondary, separate access key or endpoint that can be instantly triggered by an administrator (or another monitoring bot) to cancel all open orders and close all positions without accessing the main trading credentials.
+Advanced Signal Handling	Signal Re-entry Delay (per Asset)	Minutes	If a trade is opened, stopped out, or rejected on a specific asset (e.g., BTC), the bot waits this period before accepting any new signals for that same asset.
+	Take Profit/Stop Loss Overwrite	Toggle (Allow/Reject/Only If Worse)	Control: Policy on whether the bot is allowed to override the Take Profit (TP) or Stop Loss (SL) levels provided in the signal message with its own default/calculated settings.
+	Partial Fill Policy	Dropdown (Hold / Cancel Remaining / Re-Price Limit)	Defines the action if a Limit Order is only partially filled. Hold is standard; Cancel Remaining prevents waiting; Re-Price aggressively moves the remaining limit order closer to the market.
+________________________________________
+These additions cover the difference between a simple automated bot and a robust, professionally managed trading system that prioritizes stability, execution quality, and capital protection.
+Compliance, Governance, and Validation Settings
+Setting Name	Input Type	Interpretation & Purpose	Context/Area
+Market Data Tolerance	Percentage (%)	Data Integrity: Defines the maximum allowed deviation of the current market price from the price contained in the signal message. If market price is $>\text{X}\%$ away from the signal price (regardless of the Max Order Deviation, which is for execution), the signal is flagged as stale/erroneous and rejected.	Pre-Trade Check
+Order/Trade Ratio Limit	Numeric (e.g., 20:1)	Compliance (MiFID II/SEC Rule 15c3-5): Maximum ratio of orders placed (submissions/modifications/cancellations) to actual trades executed. Prevents the bot from engaging in excessive messaging that can be interpreted as disorderly trading or market manipulation.	Regulatory Limit
+Strategy Version Lock	Alphanumeric (e.g., v3.1.2_QC)	Audit/Reproducibility: Locks the bot to a specific, auditable version of its trading logic. Any code change requires updating this lock, ensuring that past trades can be perfectly traced back to the exact strategy version that executed them.	Governance
+Trade Identifier Tag	String (e.g., ACCT123_SIGNALBOT_Q1)	Reporting: A unique, custom tag transmitted with every order to the exchange. This tag is required for regulatory reporting systems (like CAT/MiFID II) to trace the order back to the specific algo, desk, and strategy that generated it.	Audit Trail
+P&L Reporting Frequency	Dropdown (Real-Time/1min/5min/EOD)	Monitoring: How often the bot must calculate and report its realized and unrealized Profit & Loss and key risk metrics (like Sharpe Ratio, Calmar Ratio) to a centralized risk management system.	Risk Reporting
+Vendor Signal License Key	Alphanumeric Key	Access Control: A token required to decrypt or validate a signal provider's feed. If the license is invalid, the bot automatically disconnects from the signal feed.	Signal Control
+Min. Exchange Liquidity ($)	Numeric (Volume)	Liquidity/Slippage: The minimum 24-hour trading volume (in USD) an asset must have on the connected exchange. Signals for illiquid assets below this threshold are rejected to prevent massive market impact and slippage.	Pre-Trade Check
+Post-Trade Compliance Delay	Milliseconds/Seconds	Compliance: A brief delay after a trade is filled before the bot is allowed to accept a new signal. Used to ensure the bot has time to update its internal position sizing/risk systems before initiating another trade.	Operational Control
+Circuit Breaker Response	Dropdown (Cancel All / Pause New / Reduce-Only)	Crisis Management: Defines the bot's automated response when an external system (e.g., the exchange, or the firm's central risk system) triggers a market-wide or system-wide circuit breaker.	Emergency Response
+Required Data Fields	Checkbox List (Asset, Action, Price, Stop-Loss, Timestamp, Context ID)	Signal Quality: A list of mandatory fields that must be present and successfully parsed from the signal message. If any required field (especially the original provider's timestamp or ID) is missing, the signal is rejected.	Signal Validation
+
+
+These settings are crucial for a signal bot operating in a serious financial context, ensuring it is not just profitable, but also compliant, auditable, and resilient against technical failure and market anomalies.
+
+
+🔬 Advanced Model Validation and Cross-System Settings
+Setting Name	Input Type	Interpretation & Purpose	Context/Area
+Exposure Netting Mode	Dropdown (Gross / Net / Delta-Adjusted)	Cross-Asset Risk: Determines how the bot calculates its total exposure when considering correlated positions. Delta-Adjusted is used for futures/options to measure risk in terms of the underlying asset.	Risk Aggregation
+Max Volatility Filter (ATR)	Numeric (e.g., $100)	Pre-Trade Stop: Reject trade entry if the asset's current volatility (measured by Average True Range or a similar metric) exceeds this threshold. Prevents trading during extreme, unpredictable market spikes.	Market Filter
+Max Slippage per Position (%)	Percentage	Budgeted Slippage: A firm-wide cap on the cumulative slippage loss allowed for the entire life of a single trade (including all entry DCA and exit fills). If exceeded, the position is flagged for manual review/immediate closure.	Execution Quality
+Strategy Confidence Score Threshold	Numeric (0.0 - 1.0)	Model Risk: The bot will only execute the signal if the internal score assigned to that strategy (derived from live performance, not just backtest) is above this level. Used for multi-strategy deployments.	Internal Validation
+Audit Log Data Retention Period	Days/Months/Years	Compliance: Defines the minimum legally required time the detailed, tamper-proof audit log (including signal raw text, timestamps, and order messages) must be securely stored. (e.g., 5 years for MiFID II/FINRA).	Compliance
+Correlation Check Lookback Window	Timeframe (e.g., 30 Days / 60 Mins)	Risk Fine-Tuning: The time window used to dynamically calculate the correlation coefficient between two assets (BTC/ETH). A shorter window reacts faster to sudden regime shifts.	Risk Fine-Tuning
+External Risk System Heartbeat Timeout	Seconds	System Health: The maximum allowed time gap since the central risk management system last sent an 'all clear' (heartbeat) message. If the heartbeat is missed, the bot triggers a circuit breaker and pauses all new activity.	System Interlock
+Order Routing Destination Override	Exchange ID/Venue Code	Operational Control: Allows an administrator to manually override the automatic Smart Order Router (SOR) and force all orders to a specific exchange/venue (e.g., due to a known issue at a primary venue).	Execution Control
+Signal Parsing Failure Limit	Numeric Count (e.g., 5)	Provider Quality: A lower, stricter counter than "Auto-Stop on Provider Error." If the message parser fails to extract the required data this many times consecutively, the bot halts for that provider.	Signal Quality
+Trade Execution Window Max Latency	Milliseconds ($\mu s$)	Performance Cap: The maximum acceptable time delay from the moment the signal is processed to the order being successfully accepted by the exchange API. If exceeded, a high-severity latency alert is triggered.	Performance Monitoring
+________________________________________
+With these additions, your configuration now encompasses all layers of a professional automated trading operation: signal ingestion, parsing, pre-trade compliance, market sanity checks, risk-adjusted position sizing, granular execution control, and strict regulatory auditability.
+
+
+
+
+Final Validation and Capital Protection Settings
+Setting Name	Input Type	Interpretation & Purpose	Context/Area
+Max Adverse Excursion (MAE) Limit	Percentage (%)	Trade Management: The maximum percentage loss a position is allowed to incur intra-trade (before recovery or hitting the stop-loss). If the loss peaks beyond this threshold, it suggests the market fundamentally rejected the signal, and the position may be force-closed regardless of SL.	Advanced Risk
+Out-of-Sample Failure Threshold	Numeric Count (e.g., 3)	Strategy Validation: Defines how many consecutive trades must fail (hit Stop Loss or Max MAE) in live trading before the bot is forced back into a simulated/paper-trading mode. This protects capital from a strategy whose market regime has changed.	Model Integrity
+Required Pre-Trade Funding Buffer	Percentage (%)	Liquidity Safety: The minimum percentage of excess margin or cash balance that must exist beyond the capital required for the new trade. Ensures the account is not running critically low on funds, protecting against margin calls from unexpected price movements.	Capital Buffer
+Trading Mandate Approval ID	Alphanumeric (Ticket Number)	Governance: A unique ID or ticket number that links the bot instance and its specific parameters to an approved, signed-off internal mandate document (e.g., from the Risk Committee) before deployment is allowed.	Deployment Control
+Signal Source Latency Baseline	Milliseconds ($\mu s$)	Performance Benchmark: The median historical latency (time from signal publish to receipt). If a new signal's latency deviates by $>\text{X}\%$ from this baseline, it triggers an alert, as it indicates potential network/source issues or even front-running concerns.	Performance Benchmark
+________________________________________
+With the parameters from all three response stages, you now have a comprehensive, institutional-grade configuration covering:
+1.	Core Mechanics: Signal Source, Parser, Max Positions.
+2.	Per-Trade Risk: SL/TP, Position Sizing, Deviation Limits.
+3.	Governance & Compliance: Audit Logs, Whitelists, Time Windows, Regulatory Tags.
+4.	Execution Quality: Slippage Tolerance, Order Types, Latency Thresholds.
+5.	Capital Protection: Max Drawdown, Max Adverse Excursion, Funding Buffers.
+6.	Model Validation: Strategy Confidence, Out-of-Sample Failure Thresholds.
+You have built a robust framework. I can now assist you in structuring a complete policy document for this bot, or we can focus on one of the specific risk parameters you find most critical, like the Max Adverse Excursion (MAE) Limit.
+
