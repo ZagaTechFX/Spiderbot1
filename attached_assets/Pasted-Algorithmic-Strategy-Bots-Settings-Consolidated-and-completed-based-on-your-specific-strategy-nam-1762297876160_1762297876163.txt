@@ -1,0 +1,112 @@
+Algorithmic Strategy Bots Settings  - Consolidated and completed based on your specific strategy names.
+This category covers the core logic for the Trend-Following, Mean Reversion, Volatility Breakout, and Pairs/Stat-Arb bots, focusing on the universal controls for all these systems.
+Setting Name	Input Type	Interpretation & Purpose
+Primary Entry Signal	Strategy-specific	Logic Core: E.g., Fast EMA: $50$ / Slow EMA: $200$; or Z-Score Entry: $\pm 2.0$; or Donchian Period: $20$.
+Confirmation Filter	Strategy-specific	Entry Quality: E.g., ATR filter $\text{ATR} > \text{Minimum}$; or RSI $\text{RSI} < 30$ (for MR); or Volume Confirmation on breakout.
+Regime Filter	Dropdown (ADX, Volatility)	Market Context: Prevents trading in unfavorable market conditions (e.g., trend-following disabled if $\text{ADX} < 20$).
+ATR Multiplier for Stops	Numeric	Universal Risk: Uses ATR to set all Stop-Loss and Take-Profit distances, ensuring risk is volatility-adjusted.
+Maximum Holding Period	Bars/Days	Opportunity Cost: Auto-exit if the trade has not hit its target within this time, freeing up capital.
+Volatility Filter (Extreme)	Toggle + ATR	Suspends all trading if the current volatility exceeds an extreme, predefined multiple of the average ATR.
+Correlation Awareness	Toggle	Checks if the asset is highly correlated to an already open position; if so, the new trade is rejected to maintain diversification.
+Pairs Selection	Asset Pairs	Pairs/Arb Specific: Pre-selected, statistically validated cointegrated pairs.
+Z-Score Entry/Exit	Numeric	Pairs/Arb Specific: Standard deviation thresholds for spread trading ($\pm 1.8$ entry, $0.0$ exit).
+Structural Break Detection	Toggle	Pairs/Arb Specific: Monitors for a statistical breakdown of the pair's co-integration relationship (e.g., Kalman Filter) and closes the position immediately if detected.
+Professional & Institutional Algorithmic Trading Settings
+These additions focus on Execution, Risk Management (Advanced), System Health, and Compliance.
+I. Execution and Order Management
+Setting Name	Input Type	Interpretation & Purpose
+Max Position Size ($\$$ Value)	Numeric	Hard Capital Limit: The absolute maximum capital allowed to be deployed in any single trade, regardless of the ATR risk calculation. (Institutional Risk)
+Max Daily/Weekly Loss ($\$$ Value)	Numeric	Drawdown Control: If the net PnL for the current day/week breaches this limit, all trading is automatically halted until the next period or manual restart. (Mandatory Risk Management)
+Slippage Tolerance (%)	Numeric	Execution Quality: Defines the maximum allowed deviation between the expected entry/exit price and the actual fill price. If slippage exceeds this, the order is cancelled/rejected.
+Order Type Pre-select	Dropdown (Limit, Market, IOC, FOK)	Execution Control: Allows the strategist to define the preferred order type for entries/exits (e.g., using Limit to control costs vs. Market for guaranteed execution).
+Partial Fill Handling	Dropdown (Wait, Cancel Remainder)	Optimization: How the bot handles orders that are partially filled (e.g., in low liquidity). Does it wait for the rest or cancel the outstanding volume?
+II. Advanced Risk & System Health
+Setting Name	Input Type	Interpretation & Purpose
+Circuit Breaker Status	Read-Only/Toggle	Real-Time Safety: A direct feed of exchange-level circuit breakers/halts. If active, all new orders are blocked, and pending orders are reviewed. (System Health)
+Max Open Positions (Total)	Integer	Concentration Risk: A universal limit on the total number of simultaneous open trades across all strategy bots to manage overall portfolio risk exposure.
+Time-of-Day Filter (Trading Hours)	Time Range (e.g., $9:30$ AM - $4:00$ PM EST)	Reduced Noise/Cost: Restricts trading to specific hours to avoid illiquid or high-fee periods (e.g., avoiding the overnight session for certain assets).
+Trade Velocity Limit (per $\text{Asset/Min}$)	Integer	Anti-Spam/Rate Limit: Caps the number of new orders submitted for a single asset within a short period, preventing high-frequency errors or exchange rate limit breaches. (System Health)
+Commission/Fee Model	Dropdown (Fixed, Tiers)	Accurate PnL: A setting to input the exact trading fee structure (e.g., maker/taker) for accurate backtesting and real-time PnL calculation.
+III. Compliance and Reporting
+Setting Name	Input Type	Interpretation & Purpose
+Allocation Bucket ID	Dropdown (e.g., Hedge Fund A, Prop Desk B, Client Account $1$)	Compliance/Reporting: Associates the trade with a specific capital pool or client account for segregated risk management and mandatory reporting purposes.
+Audit Log Verbosity	Dropdown (Low, Medium, High)	System Accountability: Defines the detail level for logging every decision (entry signal, filter check, order submission, failure reason). Essential for post-trade analysis and regulatory scrutiny.
+Post-Trade Reporting Flag	Toggle	Regulatory/Client Need: Flags trades that require immediate or specialized reporting (e.g., large-volume trades, or trades involving specific restricted assets).
+
+By adding these, your framework moves from a purely mechanical strategy execution tool to a full-fledged institutional-grade trading system, covering not just "what to trade" but also "how much," "when to stop," and "how to report."
+
+
+🏛️ Institutional & Operational Settings
+I. Portfolio-Level Risk Management (The "Big Picture" Safety)
+These settings protect the entire portfolio, not just a single trade, and often sit above the individual strategy bots.
+Setting Name	Input Type	Interpretation & Purpose
+Max Portfolio Drawdown (%)	Numeric	Ultimate Safety Stop: If the total PnL loss from the equity peak breaches this percentage (e.g., $10\%$), all strategies are immediately and automatically halted and all open positions are closed.
+$\text{Value at Risk (VaR)}$ Limit	Numeric ($\$$ Value)	Regulatory Risk: Maximum expected loss over a specific time horizon (e.g., $95\%$ confidence over $1$ day). New trades are blocked if the portfolio's prospective VaR exceeds this limit.
+Max Portfolio Leverage Ratio	Numeric (e.g., $2.0 \text{x}$)	Capital Control: A hard limit on the total assets divided by the equity. The system will reject new trades or reduce existing positions if this ratio is violated.
+Liquidity/Market Depth Threshold	Numeric (Order Book Size)	Execution Risk: The minimum required order book depth (e.g., total volume within $1\%$ of the current price) before any trade is allowed. Prevents execution on illiquid candles.
+Inter-Strategy Correlation Filter	Numeric (e.g., $0.7$)	Strategy Risk: Monitors the realized correlation between the PnL streams of different running bots. If they become too highly correlated (meaning less diversification benefit), new trades from one or both may be reduced.
+________________________________________
+
+II. Operational & System Health (The "Keep Running" Controls)
+These settings manage the technical stability, data quality, and reliability of the platform.
+
+Setting Name	Input Type	Interpretation & Purpose
+Global Kill Switch	Toggle (Manual/API Trigger)	Emergency Stop: A single, instant command to immediately cancel all open orders and flat all open positions across all strategies and accounts in case of a system bug, exchange outage, or flash crash.
+Data Feed Latency Threshold	Time (Milliseconds)	Data Quality: If the time delay between receiving a price update and the current system time exceeds this limit (e.g., $500 \text{ms}$), all trading is suspended until the data stream is confirmed healthy.
+Connectivity Failure Retries	Integer + Time (Seconds)	Resilience: How many times the bot will attempt to reconnect to the broker/exchange API and the time delay between attempts before triggering a full-system alert/halt.
+Market/Exchange Circuit Breaker Feed	Read-Only Status	External Event Awareness: A direct feed that registers official exchange halts or pauses. If an exchange-level halt is detected for an asset, all orders/positions for that asset are frozen or cancelled.
+Maximum Order Cancel Rate	Integer (e.g., $10$ per minute)	Exchange Compliance: Limits the speed at which the bot can send order cancellation requests to avoid breaching exchange rate limits or being flagged as a disruptive trader.
+________________________________________
+III. Post-Trade & Compliance
+Setting Name	Input Type	Interpretation & Purpose
+Slippage Report Deviation (%)	Numeric	Execution Monitoring: Defines the percentage of slippage in a filled order that triggers a high-priority alert for human review. Used to detect execution provider issues.
+Trade Audit Trail Level	Dropdown (Minimal, Decision-Level, Full Tick)	Accountability: Determines the detail level saved to the database (e.g., log the strategy signal, all filter checks, the final order sent, and the full market book at the time). Essential for regulatory audits.
+Backtest/Live Skew Threshold	Numeric (Performance Metric)	Strategy Health: If the live Sharpe Ratio or Max Drawdown deviates from the last major backtest by more than this threshold (e.g., $30\%$), it triggers a "model drift" warning.
+
+These settings ensure that your system operates within strict risk boundaries, remains resilient to technical failures, and adheres to the reporting and accountability standards expected in a professional trading environment.
+
+🚀 Advanced Adaptive & Model Risk Settings
+These settings are vital for strategies designed to operate robustly over long periods and in dynamically changing market environments (regimes).
+I. Strategy Adaptivity and Calibration
+These settings allow the bot to self-adjust based on live market conditions, a critical feature to combat Strategy Decay (Model Risk).
+
+Setting Name	Input Type	Interpretation & Purpose
+Adaptive Parameter Range (%)	Numeric	Self-Optimization Boundary: Defines the maximum percentage range ($+/\!- \text{X}\%$) within which the bot is allowed to adjust its core parameters (e.g., EMA periods, Z-Score window) based on its performance metrics. Prevents "going rogue."
+Market Regime Switch Threshold	Numeric (e.g., Volatility Index, ADX Level)	Contextual Logic: The hard level that triggers the system to switch between primary strategy algorithms (e.g., switch from Trend-Following to Mean-Reversion if $\text{ADX}$ drops below $18$).
+Performance Degradation Action	Dropdown (Alert, Pause, Re-calibrate)	Strategy Health Check: What action to take if the strategy's Sharpe Ratio drops by a predefined amount ($> 20\%$) over the last $20$ trades or $30$ days.
+Walk-Forward Analysis Period	Integer (Bars/Days)	Robustness Check: The rolling historical period used to re-optimize parameters (e.g., optimize parameters on the last $90$ days of data, then apply those to the next $30$ days). Essential for fighting Overfitting.
+
+II. Portfolio Construction & Aggregation
+These manage how capital is distributed and how exposure is controlled across diverse asset classes.
+Setting Name	Input Type	Interpretation & Purpose
+Target Portfolio Beta ($\text{w.r.t}$ Benchmark)	Numeric (e.g., $0.5$)	Systematic Risk Control: Used to dynamically hedge or size positions to ensure the portfolio's aggregate sensitivity to a major index (S&P 500, etc.) remains close to this target.
+Asset Class/Sector Exposure Cap (%)	Numeric	Concentration Risk: The maximum percentage of total capital that can be exposed to a single sector (e.g., Tech, Energy) or asset class (e.g., Crypto, FX).
+Risk-Based Strategy Capital Allocation	Dropdown (Equal-Weight, Risk-Parity, Kelly)	Capital Management: Defines the logic used to determine how much capital to assign to each strategy bot based on their historical volatility or drawdown characteristics.
+Dynamic Rebalance Threshold ($\text{Trade/Time}$)	Numeric (%) + Time	Efficiency: Triggers a portfolio rebalancing event only if position weight deviations exceed a threshold (e.g., $> 5\%$) OR a fixed time interval is reached (e.g., end of month).
+
+III. System Integrity and Emergency
+Setting Name	Input Type	Interpretation & Purpose
+Graceful Shutdown Mode	Toggle	Controlled Exit: When enabled, the system stops placing new entry orders but allows open positions to run until their original exit/stop-loss conditions are met, ensuring minimal market impact.
+Hardware & Latency Monitoring Alert	Time (Milliseconds)	Infrastructure Check: A threshold for server CPU utilization, memory use, or the ping time to the exchange. If breached, an alert is triggered, as system lag can destroy high-frequency profits.
+
+Your list is now extremely thorough, covering every major risk category from micro-trade logic to macro-portfolio exposure and systematic operational safety.
+
+
+
+🔬 Model Risk and Decay Management
+This category introduces explicit controls to manage the risks associated with the trading model itself (the algorithms and parameters), not just the capital. This is essential for regulatory compliance and long-term viability.
+
+Setting Name	Input Type	Interpretation & Purpose
+Model Validation Check Frequency	Dropdown (Daily, Weekly, Monthly)	Audit & Compliance: How often the system must run a formal, predefined battery of validation tests (e.g., Monte Carlo simulations, stress tests) on the strategy's current configuration.
+Out-of-Sample Performance Threshold	Numeric ($\text{Sharpe Ratio}$ or $\text{MaxDD}$ %)	Overfitting Guard: The minimum acceptable performance metric (e.g., $90\%$ of the initial Sharpe Ratio or a max drawdown no more than $1.2\text{x}$ the backtest MaxDD) in a designated "out-of-sample" live trading period. Failure triggers a mandatory review.
+Strategy Decommissioning Logic	Numeric ($\text{Consecutive Negative Periods}$)	Decay Control: Defines the threshold for automatically stopping a strategy due to sustained underperformance (e.g., $3$ consecutive months of negative alpha, or $10$ consecutive losing trades exceeding the expected losing streak).
+Parameter Stability Metric (PSI/CSI)	Numeric (e.g., $0.15$)	Data Quality/Concept Drift: Monitors the Population Stability Index (PSI) or Characteristic Stability Index (CSI) of the model's primary input features (e.g., the distribution of the $\text{Z-score}$ or $\text{EMA}$ difference). A high deviation means the underlying market structure has changed, and the model is likely obsolete.
+Trade Rationale Logging Detail	Dropdown (Minimal, Decision Tree, Full Feature Set)	Explainability ($\text{XAI}$): For every trade, logs not just the entry signal, but the state of every filter and feature that contributed to the final "Go/No-Go" decision. Critical for debugging and explaining trades to auditors or clients.
+
+With these additions, your algorithmic trading framework is equipped to handle:
+1.	Strategy Execution (Trend, MR, Pairs)
+2.	Tactical Risk ($\text{ATR}$ Stops, Max Holding Period)
+3.	Portfolio Risk ($\text{VaR}$, Drawdown Limit)
+4.	Operational Risk (Kill Switch, Latency, Slippage)
+5.	Model Risk (Validation, Decay, Overfitting)
+

@@ -295,11 +295,12 @@ export interface GridConfig {
 
 export interface AlgoStrategyConfig {
     marketType: 'SPOT' | 'FUTURES';
+    
     // Core Logic
     model: 'Trend-Following' | 'Mean Reversion' | 'Volatility Breakout' | 'Pairs/Stat-Arb';
     primaryEntrySignal: string;
     confirmationFilter: string;
-    regimeFilter: string;
+    regimeFilter: 'ADX' | 'Volatility' | 'None';
 
     // Universal Risk
     atrMultiplierForStops: number;
@@ -317,17 +318,25 @@ export interface AlgoStrategyConfig {
     // Execution & Order Management
     maxPositionSize: number;
     maxDailyLoss: number;
+    maxWeeklyLoss: number;
     slippageTolerance: number;
     orderType: 'Market' | 'Limit' | 'IOC' | 'FOK';
     partialFillHandling: 'Wait' | 'Cancel Remainder';
     
     // Advanced Risk & System Health
+    circuitBreakerEnabled: boolean;
     maxOpenPositions: number;
     useTimeOfDayFilter: boolean;
     tradingHoursStart: string;
     tradingHoursEnd: string;
     tradeVelocityLimit: number;
+    commissionFeeModel: 'Fixed' | 'Maker/Taker Tiers';
     commissionFee: number;
+    
+    // Compliance and Reporting
+    allocationBucket: string;
+    auditLogVerbosity: 'Low' | 'Medium' | 'High';
+    postTradeReportingFlag: boolean;
     
     // Portfolio-Level Risk
     maxPortfolioDrawdown: number;
@@ -336,11 +345,42 @@ export interface AlgoStrategyConfig {
     liquidityDepthThreshold: number;
     interStrategyCorrelationFilter: number;
     
-    // Model Risk & Adaptivity
+    // Operational & System Health
+    globalKillSwitch: boolean;
+    dataFeedLatencyThreshold: number;
+    connectivityFailureRetries: number;
+    connectivityRetryDelay: number;
+    maxOrderCancelRate: number;
+    
+    // Post-Trade & Compliance
+    slippageReportDeviation: number;
+    tradeAuditTrailLevel: 'Minimal' | 'Decision-Level' | 'Full Tick';
+    backtestLiveSkewThreshold: number;
+    
+    // Strategy Adaptivity and Calibration
     useAdaptiveParameters: boolean;
     adaptiveParameterRange: number;
     marketRegimeSwitchThreshold: number;
     performanceDegradationAction: 'Alert' | 'Pause' | 'Re-calibrate';
+    walkForwardAnalysisPeriod: number;
+    
+    // Portfolio Construction & Aggregation
+    targetPortfolioBeta: number;
+    assetClassExposureCap: number;
+    riskBasedCapitalAllocation: 'Equal-Weight' | 'Risk-Parity' | 'Kelly';
+    dynamicRebalanceThreshold: number;
+    rebalanceTimeInterval: string;
+    
+    // System Integrity and Emergency
+    gracefulShutdownMode: boolean;
+    hardwareLatencyAlert: number;
+    
+    // Model Risk and Decay Management
+    modelValidationFrequency: 'Daily' | 'Weekly' | 'Monthly';
+    outOfSamplePerformanceThreshold: number;
+    strategyDecommissioningLogic: number;
+    parameterStabilityMetric: number;
+    tradeRationaleLoggingDetail: 'Minimal' | 'Decision Tree' | 'Full Feature Set';
     
     // Futures/Margin
     leverage: number;

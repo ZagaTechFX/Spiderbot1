@@ -67,6 +67,23 @@ This is a frontend-only application with no backend component. It uses:
 - Added drawing tools interface (trend lines, horizontal lines, alerts)
 - Better crosshair with customized styling and tooltips
 
+### Institutional Algorithmic Strategy
+- Expanded `AlgoStrategyConfig` interface with comprehensive institutional-grade settings
+- Created advanced configuration panel with 6 categories:
+  - **Core Logic**: Model selection (Trend-Following, Mean Reversion, Volatility Breakout, Pairs/Stat-Arb)
+  - **Risk Management**: Portfolio-level risk controls, VaR, leverage limits, correlation filters, portfolio construction
+  - **Execution**: Order management, slippage controls, circuit breakers, time filters, commission models
+  - **Compliance**: Audit logging, allocation buckets, post-trade reporting, slippage monitoring
+  - **Operational**: Kill switch, data feed monitoring, connectivity handling, system integrity
+  - **Adaptive & Model Risk**: Parameter adaptation, performance monitoring, model validation, decay detection
+- Added 40+ professional settings including:
+  - Walk-forward analysis periods
+  - PSI/CSI drift detection
+  - Kelly Criterion capital allocation
+  - Graceful shutdown modes
+  - Trade rationale logging
+  - Backtest/live skew monitoring
+
 ## File Organization
 - `/components`: Reusable UI components (Card, Icon, ToggleSwitch, TradingChart, UserHeader, AdminHeader)
 - `/contexts`: React contexts (AuthContext for authentication state)
