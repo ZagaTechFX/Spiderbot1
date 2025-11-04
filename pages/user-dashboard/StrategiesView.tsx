@@ -1,0 +1,691 @@
+
+import React, { useState, useContext } from 'react';
+import Card from '../../components/Card';
+import ToggleSwitch from '../../components/ToggleSwitch';
+import { UserStrategy, StrategyTemplate, DcaConfig, GridConfig, AlgoStrategyConfig, CandlestickData, StrategyType } from '../../types';
+import Icon from '../../components/Icon';
+import TradingChart from '../../components/TradingChart';
+import { ThemeContext } from '../../App';
+import { UTCTimestamp } from 'lightweight-charts';
+
+// --- MOCK DATA ---
+const mockUserStrategies: UserStrategy[] = [
+    { id: 'us-1', name: 'BTC Aggressive DCA', type: 'Advanced DCA', pair: 'BTC/USDT', status: 'Active', pnl: 125.50, config: { marketType: 'FUTURES', initialBuy: 20, openPositionDoubled: true, marginCallLimit: 10, marginCallDrop: 1.5, multipleBuyRatio: 1.5, wholePositionTPRatio: 1.2, wholePositionTPCallback: 0.2, tpRule: 'Combined TP', timeframe: '4h', startOrderType: 'MARKET', startCondition: 'RSI < 30', buyInCallback: 0.5, tpBasis: '% by Average Price', subPositionTPCallback: 1.5, soScalingType: 'Geometric', maxSOPriceDeviation: 15, maxActiveSOs: 3, soPriceStepMultiplier: 1.3, rebuy: 1.3, rebuyCallbackRatio: 1.3, maxLossSL: 25, trailingSL: true, trailingSLCallback: 2, cooldownPeriod: 4, maxDrawdownLimit: 50, totalUsedUSDT: 1000, maxTradesPerDay: 10, tradingWindowStart: '00:00', tradingWindowEnd: '23:59', reinvestProfit: true, leverage: 5, marginMode: 'Isolated' } },
+    { id: 'us-2', name: 'ETH Stable Grid', type: 'Advanced Grid', pair: 'ETH/USDT', status: 'Active', pnl: 88.20, config: { marketType: 'SPOT', rangeType: 'AI_OPTIMIZED', aiModel: 'notebook', analysisPeriod: 90, lowerPrice: 3500, upperPrice: 4000, gridCount: 50, investmentAmount: 2000, gridSpacingType: 'Geometric', startCondition: 'None', pumpProtection: true, timeframeForPumpDump: 15, trailingUp: true, trailingUpPercentage: 2, trailingDown: false, trailingDownPercentage: 2, stopLossTrailing: true, stopLossTrailingPercentage: 5, stopLossPrice: 3300, rangeBreakoutAction: 'Stop Bot', maxInventoryLimit: 0.5, compoundingProfit: true, gridRedeploymentStrategy: 'Auto-Restart New AI', orderDirection: 'Neutral', leverageRatio: 1, marginMode: 'Cross', autoMarginTransfer: false, hedgeGridToggle: false } },
+    { id: 'us-3', name: 'SOL Scalper Signals', type: 'Signal Bot', pair: 'SOL/USDT', status: 'Paused', pnl: -15.80, config: {} },
+    { id: 'us-4', name: 'BTC Cautious DCA', type: 'Advanced DCA', pair: 'BTC/USDT', status: 'Error', pnl: -45.10, config: { marketType: 'SPOT', initialBuy: 10, openPositionDoubled: false, marginCallLimit: 5, marginCallDrop: 2, multipleBuyRatio: 1.2, wholePositionTPRatio: 2, wholePositionTPCallback: 0.5, tpRule: '1st & last TP', timeframe: '4h', startOrderType: 'LIMIT', startCondition: 'None', buyInCallback: 0.2, tpBasis: '% by Base Order Value', subPositionTPCallback: 2, soScalingType: 'Arithmetic', maxSOPriceDeviation: 20, maxActiveSOs: 2, soPriceStepMultiplier: 1.5, rebuy: 2, rebuyCallbackRatio: 0.5, maxLossSL: 15, trailingSL: false, trailingSLCallback: 5, cooldownPeriod: 24, maxDrawdownLimit: 30, totalUsedUSDT: 500, maxTradesPerDay: 2, tradingWindowStart: '09:00', tradingWindowEnd: '17:00', reinvestProfit: false, leverage: 1, marginMode: 'Cross' } },
+];
+
+const strategyMarketplace = [
+    { type: 'Advanced DCA', description: 'A robust strategy that averages down your entry price by placing subsequent buy orders if the price moves against you.', icon: 'arrowDown' },
+    { type: 'Advanced Grid', description: 'Uses manual or AI-powered ranges to set up a grid of buy and sell orders to profit from volatility.', icon: 'bot' },
+    { type: 'Quantitative Strategy', description: 'Deploys advanced algorithmic models like trend-following, mean reversion, or statistical arbitrage.', icon: 'beaker' },
+    { type: 'Signal Bot', description: 'Executes trades based on external signals from sources like TradingView, Telegram, or custom APIs.', icon: 'trades' },
+];
+
+const mockStrategyTemplates: StrategyTemplate[] = [
+    { id: 'st-1', name: 'Safe BTC DCA', type: 'Advanced DCA', config: { marketType: 'SPOT', initialBuy: 10, openPositionDoubled: false, marginCallLimit: 5, marginCallDrop: 2, multipleBuyRatio: 1.2, wholePositionTPRatio: 2, wholePositionTPCallback: 0.5, tpRule: '1st & last TP', timeframe: '4h', startOrderType: 'LIMIT', startCondition: 'None', buyInCallback: 0.2, tpBasis: '% by Base Order Value', subPositionTPCallback: 2, soScalingType: 'Arithmetic', maxSOPriceDeviation: 20, maxActiveSOs: 2, soPriceStepMultiplier: 1.5, rebuy: 2, rebuyCallbackRatio: 0.5, maxLossSL: 15, trailingSL: false, trailingSLCallback: 5, cooldownPeriod: 24, maxDrawdownLimit: 30, totalUsedUSDT: 500, maxTradesPerDay: 2, tradingWindowStart: '09:00', tradingWindowEnd: '17:00', reinvestProfit: false, leverage: 1, marginMode: 'Cross' } },
+    { id: 'st-2', name: 'Volatile ETH Grid', type: 'Advanced Grid', config: { marketType: 'FUTURES', rangeType: 'Manual', lowerPrice: 3000, upperPrice: 4500, gridCount: 100, investmentAmount: 1500, gridSpacingType: 'Geometric', leverageRatio: 5, stopLossPrice: 2800, orderDirection: 'Long', marginMode: 'Isolated', hedgeGridToggle: true } },
+];
+
+// Generate mock candlestick data
+const generateCandlestickData = (startTime: number, numPoints: number): CandlestickData[] => {
+    let price = 68000;
+    let currentTime = startTime;
+    const data: CandlestickData[] = [];
+    for (let i = 0; i < numPoints; i++) {
+        const open = price + (Math.random() - 0.5) * 200;
+        const close = open + (Math.random() - 0.5) * 500;
+        const high = Math.max(open, close) + Math.random() * 100;
+        const low = Math.min(open, close) - Math.random() * 100;
+        const value = 1000 + Math.random() * 2000;
+        const color = close >= open ? 'rgba(16, 185, 129, 0.6)' : 'rgba(239, 68, 68, 0.6)';
+
+        data.push({ time: Math.floor(currentTime / 1000) as UTCTimestamp, open, high, low, close, value, color });
+        price = close;
+        currentTime += 4 * 60 * 60 * 1000; // 4 hour candles
+    }
+    return data;
+};
+const mockCandlestickData = generateCandlestickData(new Date().getTime() - 365 * 24 * 60 * 60 * 1000, 500);
+
+const mockRsiData = mockCandlestickData.map(d => ({
+    time: d.time,
+    value: 30 + Math.random() * 40,
+}));
+
+
+// --- HELPER COMPONENTS (defined outside to prevent re-renders) ---
+const InputField: React.FC<{ label: string, type?: string, value: any, onChange: (e: any) => void, unit?: string, placeholder?: string, helpText?: string }> = ({ label, type = 'text', value, onChange, unit, placeholder, helpText }) => (
+    <div>
+        <label className="block text-sm font-medium text-gray-500 dark:text-dark-text-secondary">{label}</label>
+        <div className="mt-1 flex items-center">
+            <input type={type} value={value} onChange={onChange} placeholder={placeholder} className="w-full bg-gray-50 dark:bg-dark-bg-secondary border border-gray-300 dark:border-dark-border rounded-md shadow-sm p-2 focus:ring-primary focus:border-primary" />
+            {unit && <span className="ml-2 text-gray-500 dark:text-dark-text-secondary whitespace-nowrap">{unit}</span>}
+        </div>
+        {helpText && <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">{helpText}</p>}
+    </div>
+);
+
+const ToggleField: React.FC<{ label: string, enabled: boolean, onChange: (val: boolean) => void, helpText?: string }> = ({ label, enabled, onChange, helpText }) => (
+    <div>
+        <div className="flex justify-between items-center">
+            <label className="text-sm font-medium text-gray-500 dark:text-dark-text-secondary">{label}</label>
+            <ToggleSwitch enabled={enabled} onChange={onChange} />
+        </div>
+        {helpText && <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">{helpText}</p>}
+    </div>
+);
+
+const SelectField: React.FC<{ label: string, value: any, onChange: (e: any) => void, children?: React.ReactNode }> = ({ label, value, onChange, children }) => (
+    <div>
+        <label className="block text-sm font-medium text-gray-500 dark:text-dark-text-secondary mb-1">{label}</label>
+        <select value={value} onChange={onChange} className="w-full bg-gray-50 dark:bg-dark-bg-secondary border border-gray-300 dark:border-dark-border rounded-md shadow-sm p-2 focus:ring-primary focus:border-primary">
+            {children}
+        </select>
+    </div>
+);
+
+const Section: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
+    <details className="group" open>
+        <summary className="text-md font-semibold cursor-pointer py-2 text-gray-700 dark:text-dark-text group-open:border-b dark:border-dark-border mb-4">{title}</summary>
+        <div className="space-y-4 animate-fadeIn">{children}</div>
+    </details>
+);
+
+const MarketTypeSelector: React.FC<{ value: 'SPOT' | 'FUTURES'; onChange: (value: 'SPOT' | 'FUTURES') => void; }> = ({ value, onChange }) => (
+    <div className="mb-6">
+        <label className="block text-sm font-medium text-gray-500 dark:text-dark-text-secondary mb-2">Market Type</label>
+        <div className="flex w-full bg-gray-100 dark:bg-dark-bg-secondary rounded-lg p-1">
+            <button onClick={() => onChange('SPOT')} className={`w-full py-1.5 text-sm font-semibold rounded-md transition-colors ${value === 'SPOT' ? 'bg-white dark:bg-primary shadow-sm' : 'hover:bg-gray-200 dark:hover:bg-gray-700'}`}>SPOT</button>
+            <button onClick={() => onChange('FUTURES')} className={`w-full py-1.5 text-sm font-semibold rounded-md transition-colors ${value === 'FUTURES' ? 'bg-white dark:bg-primary shadow-sm' : 'hover:bg-gray-200 dark:hover:bg-gray-700'}`}>FUTURES</button>
+        </div>
+    </div>
+);
+
+
+// --- CONFIGURATION PANELS ---
+const DcaBotConfigPanel: React.FC<{ config: DcaConfig; onConfigChange: (newConfig: DcaConfig) => void; onSave: () => void; onSaveTemplate: () => void; }> = ({ config, onConfigChange, onSave, onSaveTemplate }) => {
+    
+    const handleChange = (field: keyof DcaConfig) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement> | boolean | 'SPOT' | 'FUTURES') => {
+        const value = typeof e === 'boolean' || e === 'SPOT' || e === 'FUTURES'
+            ? e 
+            : e.target.type === 'number' ? parseFloat(e.target.value) || 0 : e.target.value;
+        onConfigChange({ ...config, [field]: value });
+    };
+
+    return (
+        <Card>
+            <h3 className="text-lg font-bold mb-4">Configure Advanced DCA Bot</h3>
+            <div className="space-y-6 max-h-[70vh] overflow-y-auto pr-2">
+                
+                <MarketTypeSelector value={config.marketType} onChange={handleChange('marketType')} />
+
+                <Section title="Entry Logic">
+                    <SelectField label="Start Order Type" value={config.startOrderType} onChange={handleChange('startOrderType')}>
+                        <option value="MARKET">MARKET (Prioritize Speed)</option>
+                        <option value="LIMIT">LIMIT (Prioritize Price)</option>
+                    </SelectField>
+                    <InputField label="First Buy in amount" type="number" value={config.initialBuy} onChange={handleChange('initialBuy')} unit="USDT" helpText="The initial capital to start the position."/>
+                    <ToggleField label="Open position doubled" enabled={config.openPositionDoubled} onChange={handleChange('openPositionDoubled')} />
+                    <SelectField label="Timeframe (for Indicators)" value={config.timeframe} onChange={handleChange('timeframe')}>
+                        {['1m', '5m', '15m', '1h', '4h', '1d'].map(tf => <option key={tf} value={tf}>{tf}</option>)}
+                    </SelectField>
+                    <InputField label="Start Condition / Signal" value={config.startCondition} onChange={handleChange('startCondition')} helpText="e.g., RSI < 30, MACD cross, etc. Use 'None' to start immediately." />
+                    <InputField label="Buy in callback" type="number" value={config.buyInCallback} onChange={handleChange('buyInCallback')} unit="%" helpText="Trailing buy to optimize entry timing." />
+                </Section>
+                <Section title="Take Profit">
+                    <SelectField label="Take Profit Basis" value={config.tpBasis} onChange={handleChange('tpBasis')}>
+                        <option value="% by Average Price">% by Average Price (DCA Default)</option>
+                        <option value="% by Base Order Value">% by Base Order Value</option>
+                    </SelectField>
+                    <InputField label="Whole position take profit" type="number" value={config.wholePositionTPRatio} onChange={handleChange('wholePositionTPRatio')} unit="%" />
+                    <InputField label="Whole position TP callback" type="number" value={config.wholePositionTPCallback} onChange={handleChange('wholePositionTPCallback')} unit="%" helpText="Trailing stop for the main profit target."/>
+                    <InputField label="Sub-position TP callback" type="number" value={config.subPositionTPCallback} onChange={handleChange('subPositionTPCallback')} unit="%" helpText="Trailing stop for individual safety orders." />
+                    <SelectField label="Set TP Rules" value={config.tpRule} onChange={handleChange('tpRule')}>
+                        {['Combined TP', '1st & last TP', 'TP all'].map(rule => <option key={rule} value={rule}>{rule}</option>)}
+                    </SelectField>
+                </Section>
+                <Section title="Safety Orders (SO) Logic">
+                    <InputField label="Margin call limit" type="number" value={config.marginCallLimit} onChange={handleChange('marginCallLimit')} helpText="Maximum number of safety orders." />
+                    <InputField label="Margin Call Drop" type="number" value={config.marginCallDrop} onChange={handleChange('marginCallDrop')} unit="%" helpText="Price drop to trigger the next SO."/>
+                    <InputField label="Multiple Buy in ratio" type="number" value={config.multipleBuyRatio} onChange={handleChange('multipleBuyRatio')} unit="x" helpText="Multiplier to increase the size of each subsequent SO." />
+                    <SelectField label="SO Scaling Type" value={config.soScalingType} onChange={handleChange('soScalingType')}>
+                        <option value="Geometric">Geometric (Linear drop %)</option>
+                        <option value="Arithmetic">Arithmetic (Progressive drop %)</option>
+                    </SelectField>
+                    <InputField label="SO Price Step Multiplier" type="number" value={config.soPriceStepMultiplier} onChange={handleChange('soPriceStepMultiplier')} unit="x" helpText="Widens the grid between subsequent SOs." />
+                    <InputField label="Maximum SO Price Deviation" type="number" value={config.maxSOPriceDeviation} onChange={handleChange('maxSOPriceDeviation')} unit="%" helpText="Hard floor for safety orders from initial buy."/>
+                    <InputField label="Max Active SOs" type="number" value={config.maxActiveSOs} onChange={handleChange('maxActiveSOs')} helpText="Limits simultaneous safety orders." />
+                </Section>
+                 <Section title="Risk Control">
+                    <InputField label="Max Loss Stop-Loss (SL)" type="number" value={config.maxLossSL} onChange={handleChange('maxLossSL')} unit="%" helpText="Global hard stop if total loss reaches this %." />
+                    <ToggleField label="Trailing Stop-Loss (TSL)" enabled={config.trailingSL} onChange={handleChange('trailingSL')} />
+                    {config.trailingSL && <InputField label="TSL Callback" type="number" value={config.trailingSLCallback} onChange={handleChange('trailingSLCallback')} unit="%" helpText="Callback for the trailing stop-loss." />}
+                    <InputField label="Cooldown Period After SL" type="number" value={config.cooldownPeriod} onChange={handleChange('cooldownPeriod')} unit="hours" helpText="Wait period before restarting after a stop-loss." />
+                    <InputField label="Max Drawdown Limit / Cycle" type="number" value={config.maxDrawdownLimit} onChange={handleChange('maxDrawdownLimit')} unit="%" helpText="Stops a single bot cycle if floating loss reaches this %." />
+                </Section>
+                <Section title="Deployment & Automation">
+                    <InputField label="Total Used Capital" type="number" value={config.totalUsedUSDT} onChange={handleChange('totalUsedUSDT')} unit="USDT" helpText="Total capital dedicated to this bot." />
+                    <InputField label="Max Trades Per Day" type="number" value={config.maxTradesPerDay} onChange={handleChange('maxTradesPerDay')} helpText="0 for unlimited." />
+                    <ToggleField label="Reinvest Profit" enabled={config.reinvestProfit} onChange={handleChange('reinvestProfit')} helpText="Enable compounding returns."/>
+                </Section>
+                 
+                {config.marketType === 'FUTURES' && (
+                    <Section title="Futures / Margin Settings">
+                        <InputField label="Leverage Ratio" type="number" value={config.leverage} onChange={handleChange('leverage')} unit="x" />
+                         <SelectField label="Margin Mode" value={config.marginMode} onChange={handleChange('marginMode')}>
+                            <option value="Cross">Cross</option>
+                            <option value="Isolated">Isolated</option>
+                        </SelectField>
+                    </Section>
+                )}
+            </div>
+            <div className="mt-6 flex space-x-2">
+                <button onClick={onSaveTemplate} className="flex-1 bg-gray-200 dark:bg-dark-bg-secondary py-2 px-4 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-700">Save as Template</button>
+                <button onClick={onSave} className="flex-1 bg-primary text-white py-2 px-4 rounded-lg hover:bg-primary-hover">Save & Start</button>
+            </div>
+        </Card>
+    );
+};
+
+const GridBotConfigPanel: React.FC<{ config: GridConfig; onConfigChange: (newConfig: GridConfig) => void; onSave: () => void; onSaveTemplate: () => void; }> = ({ config, onConfigChange, onSave, onSaveTemplate }) => {
+    
+    const handleChange = (field: keyof GridConfig) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement> | boolean | 'SPOT' | 'FUTURES') => {
+        const value = typeof e === 'boolean' || e === 'SPOT' || e === 'FUTURES'
+            ? e
+            : e.target.type === 'number' ? parseFloat(e.target.value) || 0 : e.target.value;
+        onConfigChange({ ...config, [field]: value });
+    };
+    
+    return (
+        <Card>
+            <h3 className="text-lg font-bold mb-4">Configure Advanced Grid Bot</h3>
+            
+            <div className="space-y-6 max-h-[70vh] overflow-y-auto pr-2">
+                
+                <MarketTypeSelector value={config.marketType} onChange={handleChange('marketType')} />
+
+                <Section title="Basic Grid Settings">
+                     <SelectField label="Range Type" value={config.rangeType} onChange={handleChange('rangeType')}>
+                        <option value="AI_OPTIMIZED">AI Optimized</option>
+                        <option value="Manual">Manual</option>
+                    </SelectField>
+                    {config.rangeType === 'AI_OPTIMIZED' ? (
+                        <>
+                            <SelectField label="AI Model" value={config.aiModel} onChange={handleChange('aiModel')}>
+                                <option value="notebook">Notebook (Spot)</option>
+                                <option value="princeton">Princeton (Futures)</option>
+                            </SelectField>
+                            <InputField label="Analysis Period" type="number" value={config.analysisPeriod} onChange={handleChange('analysisPeriod')} unit="days" />
+                        </>
+                    ) : (
+                         <div className="grid grid-cols-2 gap-4">
+                            <InputField label="Lower Price" type="number" value={config.lowerPrice} onChange={handleChange('lowerPrice')} />
+                            <InputField label="Upper Price" type="number" value={config.upperPrice} onChange={handleChange('upperPrice')} />
+                        </div>
+                    )}
+                    <InputField label="Grid Count" type="number" value={config.gridCount} onChange={handleChange('gridCount')} />
+                    <InputField label="Total Investment" type="number" value={config.investmentAmount} onChange={handleChange('investmentAmount')} unit="USDT" />
+                </Section>
+
+                <Section title="Grid Logic & Execution">
+                    <SelectField label="Grid Spacing Type" value={config.gridSpacingType} onChange={handleChange('gridSpacingType')}>
+                        <option value="Arithmetic">Arithmetic (Equal Price Difference)</option>
+                        <option value="Geometric">Geometric (Equal % Difference)</option>
+                    </SelectField>
+                    <InputField label="Start Condition" value={config.startCondition} onChange={handleChange('startCondition')} helpText="e.g., RSI < 30. Use 'None' to start immediately." />
+                    <ToggleField label="Pump Protection" enabled={config.pumpProtection} onChange={handleChange('pumpProtection')} />
+                    <InputField label="Timeframe for Pump/Dump" type="number" value={config.timeframeForPumpDump} onChange={handleChange('timeframeForPumpDump')} unit="minutes" />
+                </Section>
+                
+                <Section title="Advanced Trailing Controls">
+                    <ToggleField label="Trailing Up" enabled={config.trailingUp} onChange={handleChange('trailingUp')} helpText="Moves the entire grid up if price breaks the upper range." />
+                    {config.trailingUp && <InputField label="Trailing Up By" type="number" value={config.trailingUpPercentage} onChange={handleChange('trailingUpPercentage')} unit="%" />}
+                     <ToggleField label="Trailing Down" enabled={config.trailingDown} onChange={handleChange('trailingDown')} helpText="Moves the entire grid down." />
+                    {config.trailingDown && <InputField label="Trailing Down By" type="number" value={config.trailingDownPercentage} onChange={handleChange('trailingDownPercentage')} unit="%" />}
+                    <ToggleField label="Stop Loss Trailing" enabled={config.stopLossTrailing} onChange={handleChange('stopLossTrailing')} />
+                    {config.stopLossTrailing && <InputField label="Trailing SL %" type="number" value={config.stopLossTrailingPercentage} onChange={handleChange('stopLossTrailingPercentage')} unit="%" />}
+                </Section>
+                
+                <Section title="Risk & Inventory Management">
+                    <InputField label="Stop-Loss Price" type="number" value={config.stopLossPrice} onChange={handleChange('stopLossPrice')} />
+                    <SelectField label="Range Breakout Action" value={config.rangeBreakoutAction} onChange={handleChange('rangeBreakoutAction')}>
+                        <option value="Stop Bot">Stop Bot</option>
+                        <option value="Stop & Sell">Stop Bot & Sell Inventory</option>
+                        <option value="Convert to DCA">Convert to DCA Bot</option>
+                    </SelectField>
+                    <InputField label="Max Inventory Limit" type="number" value={config.maxInventoryLimit} onChange={handleChange('maxInventoryLimit')} helpText="In base currency, e.g., max 0.5 BTC. 0 for unlimited." />
+                </Section>
+                
+                <Section title="Profit & Automation">
+                    <ToggleField label="Compounding Profit" enabled={config.compoundingProfit} onChange={handleChange('compoundingProfit')} helpText="Automatically roll profits back into the total investment." />
+                    <SelectField label="Grid Re-Deployment Strategy" value={config.gridRedeploymentStrategy} onChange={handleChange('gridRedeploymentStrategy')}>
+                        <option value="Pause">Pause and Notify</option>
+                        <option value="Auto-Restart Same">Auto-Restart with Same Settings</option>
+                        <option value="Auto-Restart New AI">Auto-Restart with New AI-Optimized Range</option>
+                    </SelectField>
+                </Section>
+
+                {config.marketType === 'FUTURES' && (
+                    <Section title="Futures Trading">
+                        <SelectField label="Order Direction" value={config.orderDirection} onChange={handleChange('orderDirection')}>
+                            <option value="Neutral">Neutral</option>
+                            <option value="Long">Long</option>
+                            <option value="Short">Short</option>
+                        </SelectField>
+                        <InputField label="Leverage Ratio" type="number" value={config.leverageRatio} onChange={handleChange('leverageRatio')} unit="x" />
+                        <SelectField label="Margin Mode" value={config.marginMode} onChange={handleChange('marginMode')}>
+                            <option value="Cross">Cross</option>
+                            <option value="Isolated">Isolated</option>
+                        </SelectField>
+                        <p className="text-sm">Est. Liquidation Price: <span className="font-bold text-warning">$55,123.45</span></p>
+                        <ToggleField label="Auto Margin Transfer" enabled={config.autoMarginTransfer} onChange={handleChange('autoMarginTransfer')} />
+                        <ToggleField label="Hedge Grid Toggle (Two-Way Grid)" enabled={config.hedgeGridToggle} onChange={handleChange('hedgeGridToggle')} />
+                    </Section>
+                )}
+            </div>
+             <div className="mt-6 flex space-x-2">
+                <button onClick={onSaveTemplate} className="flex-1 bg-gray-200 dark:bg-dark-bg-secondary py-2 px-4 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-700">Save as Template</button>
+                <button onClick={onSave} className="flex-1 bg-primary text-white py-2 px-4 rounded-lg hover:bg-primary-hover">Save & Start</button>
+            </div>
+        </Card>
+    );
+};
+
+const QuantitativeStrategyConfigPanel: React.FC<{ config: AlgoStrategyConfig; onConfigChange: (newConfig: AlgoStrategyConfig) => void; onSave: () => void; onSaveTemplate: () => void; }> = ({ config, onConfigChange, onSave, onSaveTemplate }) => {
+    
+    const handleChange = (field: keyof AlgoStrategyConfig) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement> | boolean | 'SPOT' | 'FUTURES') => {
+        const value = typeof e === 'boolean' || e === 'SPOT' || e === 'FUTURES'
+            ? e 
+            : e.target.type === 'checkbox' ? (e as React.ChangeEvent<HTMLInputElement>).target.checked
+            : e.target.type === 'number' ? parseFloat(e.target.value) || 0 : e.target.value;
+        onConfigChange({ ...config, [field]: value });
+    };
+
+    return (
+        <Card>
+            <h3 className="text-lg font-bold mb-4">Configure Quantitative Strategy</h3>
+            <div className="space-y-6 max-h-[70vh] overflow-y-auto pr-2">
+                 <MarketTypeSelector value={config.marketType} onChange={handleChange('marketType')} />
+                 <Section title="Core Strategy Logic">
+                    <SelectField label="Algorithmic Model" value={config.model} onChange={handleChange('model')}>
+                        <option value="Trend-Following">Trend-Following</option>
+                        <option value="Mean Reversion">Mean Reversion</option>
+                        <option value="Volatility Breakout">Volatility Breakout</option>
+                        <option value="Pairs/Stat-Arb">Pairs/Stat-Arb</option>
+                    </SelectField>
+                    <InputField label="Primary Entry Signal" value={config.primaryEntrySignal} onChange={handleChange('primaryEntrySignal')} helpText="e.g., EMA 50 cross EMA 200" />
+                    <InputField label="Confirmation Filter" value={config.confirmationFilter} onChange={handleChange('confirmationFilter')} helpText="e.g., ATR > 10 or RSI < 30" />
+                    <InputField label="Market Regime Filter" value={config.regimeFilter} onChange={handleChange('regimeFilter')} helpText="e.g., ADX > 20 or Volatility < 3%" />
+                </Section>
+                {config.model === 'Pairs/Stat-Arb' && (
+                    <Section title="Pairs Trading Settings">
+                         <InputField label="Pair Selection" value={config.pairSelection} onChange={handleChange('pairSelection')} helpText="Comma-separated pairs, e.g., BTC/USDT,ETH/USDT" />
+                         <InputField label="Z-Score Entry Threshold" type="number" value={config.zScoreEntry} onChange={handleChange('zScoreEntry')} />
+                         <InputField label="Z-Score Exit Threshold" type="number" value={config.zScoreExit} onChange={handleChange('zScoreExit')} />
+                         <ToggleField label="Structural Break Detection" enabled={config.useStructuralBreakDetection} onChange={handleChange('useStructuralBreakDetection')} helpText="Monitor for breakdown of cointegration" />
+                    </Section>
+                )}
+                 <Section title="Universal Risk Management">
+                    <InputField label="ATR Multiplier for Stops" type="number" value={config.atrMultiplierForStops} onChange={handleChange('atrMultiplierForStops')} helpText="Sets Stop-Loss based on volatility." />
+                    <InputField label="Maximum Holding Period" type="number" value={config.maxHoldingPeriod} onChange={handleChange('maxHoldingPeriod')} unit="days" />
+                    <ToggleField label="Extreme Volatility Filter" enabled={config.useVolatilityFilter} onChange={handleChange('useVolatilityFilter')} />
+                    <ToggleField label="Correlation Awareness" enabled={config.useCorrelationAwareness} onChange={handleChange('useCorrelationAwareness')} helpText="Reject trade if highly correlated with an open position." />
+                </Section>
+                 <Section title="Execution & Order Management">
+                    <InputField label="Max Position Size" type="number" value={config.maxPositionSize} onChange={handleChange('maxPositionSize')} unit="USD" />
+                    <InputField label="Max Daily Loss" type="number" value={config.maxDailyLoss} onChange={handleChange('maxDailyLoss')} unit="USD" />
+                    <InputField label="Slippage Tolerance" type="number" value={config.slippageTolerance} onChange={handleChange('slippageTolerance')} unit="%" />
+                    <SelectField label="Default Order Type" value={config.orderType} onChange={handleChange('orderType')}>
+                        {['Market', 'Limit', 'IOC', 'FOK'].map(o => <option key={o} value={o}>{o}</option>)}
+                    </SelectField>
+                </Section>
+                <Section title="Advanced Portfolio Risk">
+                    <InputField label="Max Portfolio Drawdown" type="number" value={config.maxPortfolioDrawdown} onChange={handleChange('maxPortfolioDrawdown')} unit="%" helpText="Halts all strategies if breached." />
+                    <InputField label="Value at Risk (VaR) Limit" type="number" value={config.varLimit} onChange={handleChange('varLimit')} unit="USD" />
+                    <InputField label="Max Portfolio Leverage" type="number" value={config.maxPortfolioLeverage} onChange={handleChange('maxPortfolioLeverage')} unit="x" />
+                    <InputField label="Inter-Strategy Correlation Filter" type="number" value={config.interStrategyCorrelationFilter} onChange={handleChange('interStrategyCorrelationFilter')} helpText="e.g., 0.7" />
+                </Section>
+                <Section title="Model Risk & Adaptivity">
+                     <ToggleField label="Use Adaptive Parameters" enabled={config.useAdaptiveParameters} onChange={handleChange('useAdaptiveParameters')} helpText="Allows bot to self-adjust parameters." />
+                     <InputField label="Adaptive Parameter Range" type="number" value={config.adaptiveParameterRange} onChange={handleChange('adaptiveParameterRange')} unit="%" />
+                     <SelectField label="Performance Degradation Action" value={config.performanceDegradationAction} onChange={handleChange('performanceDegradationAction')}>
+                        <option value="Alert">Alert</option>
+                        <option value="Pause">Pause</option>
+                        <option value="Re-calibrate">Re-calibrate</option>
+                    </SelectField>
+                </Section>
+                {config.marketType === 'FUTURES' && (
+                    <Section title="Futures / Margin Settings">
+                        <InputField label="Leverage Ratio" type="number" value={config.leverage} onChange={handleChange('leverage')} unit="x" />
+                         <SelectField label="Margin Mode" value={config.marginMode} onChange={handleChange('marginMode')}>
+                            <option value="Cross">Cross</option>
+                            <option value="Isolated">Isolated</option>
+                        </SelectField>
+                    </Section>
+                )}
+            </div>
+             <div className="mt-6 flex space-x-2">
+                <button onClick={onSaveTemplate} className="flex-1 bg-gray-200 dark:bg-dark-bg-secondary py-2 px-4 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-700">Save as Template</button>
+                <button onClick={onSave} className="flex-1 bg-primary text-white py-2 px-4 rounded-lg hover:bg-primary-hover">Save & Start</button>
+            </div>
+        </Card>
+    );
+};
+
+
+// --- MODALS ---
+const ComparisonModal: React.FC<{ strategyIds: string[]; onClose: () => void }> = ({ strategyIds, onClose }) => {
+    const strategiesToCompare = mockUserStrategies.filter(s => strategyIds.includes(s.id));
+    
+    const allConfigKeys = Array.from(new Set(strategiesToCompare.flatMap(s => Object.keys(s.config))));
+
+    const renderValue = (value: any) => {
+        if (typeof value === 'boolean') {
+            return value ? 'Yes' : 'No';
+        }
+        if (value === undefined || value === null) {
+            return <span className="text-gray-400">N/A</span>;
+        }
+        return String(value);
+    }
+    
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center p-4">
+            <Card className="w-full max-w-4xl max-h-[90vh] flex flex-col">
+                 <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-xl font-bold">Compare Strategies</h2>
+                    <button onClick={onClose}><Icon name="cross" /></button>
+                </div>
+                <div className="overflow-x-auto flex-1">
+                    <table className="w-full text-sm">
+                        <thead>
+                            <tr className="bg-gray-50 dark:bg-dark-bg-secondary">
+                                <th className="p-2 text-left font-semibold sticky left-0 bg-gray-50 dark:bg-dark-bg-secondary">Parameter</th>
+                                {strategiesToCompare.map(s => <th key={s.id} className="p-2 text-center font-semibold">{s.name}</th>)}
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y dark:divide-dark-border">
+                             {/* General Info */}
+                            <tr className="font-bold bg-gray-100 dark:bg-dark-bg-secondary/50"><td colSpan={strategiesToCompare.length + 1} className="p-2 sticky left-0 bg-gray-100 dark:bg-dark-bg-secondary/50">General</td></tr>
+                            <tr><td className="p-2 font-medium sticky left-0 bg-white dark:bg-dark-card">Type</td>{strategiesToCompare.map(s => <td key={s.id} className="p-2 text-center">{s.type}</td>)}</tr>
+                            <tr><td className="p-2 font-medium sticky left-0 bg-white dark:bg-dark-card">Pair</td>{strategiesToCompare.map(s => <td key={s.id} className="p-2 text-center">{s.pair}</td>)}</tr>
+                            <tr><td className="p-2 font-medium sticky left-0 bg-white dark:bg-dark-card">Status</td>{strategiesToCompare.map(s => <td key={s.id} className="p-2 text-center">{s.status}</td>)}</tr>
+                            <tr><td className="p-2 font-medium sticky left-0 bg-white dark:bg-dark-card">PnL</td>{strategiesToCompare.map(s => <td key={s.id} className={`p-2 text-center font-semibold ${s.pnl >= 0 ? 'text-success' : 'text-danger'}`}>{s.pnl.toFixed(2)} USDT</td>)}</tr>
+
+                            {/* Configuration */}
+                            <tr className="font-bold bg-gray-100 dark:bg-dark-bg-secondary/50"><td colSpan={strategiesToCompare.length + 1} className="p-2 sticky left-0 bg-gray-100 dark:bg-dark-bg-secondary/50">Configuration</td></tr>
+                            {allConfigKeys.map(key => (
+                                <tr key={key}>
+                                    <td className="p-2 font-medium sticky left-0 bg-white dark:bg-dark-card capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</td>
+                                    {strategiesToCompare.map(s => (
+                                        <td key={s.id} className="p-2 text-center">
+                                            {renderValue((s.config as any)[key])}
+                                        </td>
+                                    ))}
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            </Card>
+        </div>
+    );
+};
+
+// --- MAIN VIEW ---
+const StrategiesView: React.FC = () => {
+    const [activeTab, setActiveTab] = useState<'my' | 'market' | 'templates'>('my');
+    const [userStrategies, setUserStrategies] = useState<UserStrategy[]>(mockUserStrategies);
+    const [templates, setTemplates] = useState<StrategyTemplate[]>(mockStrategyTemplates);
+
+    // State for creation/editing flow
+    const [view, setView] = useState<'list' | 'config'>('list');
+    const [editingStrategy, setEditingStrategy] = useState<UserStrategy | null>(null);
+    const [currentConfig, setCurrentConfig] = useState<any | null>(null);
+    const [selectedStrategyType, setSelectedStrategyType] = useState<StrategyType | null>(null);
+    const [currentPair, setCurrentPair] = useState('BTC/USDT');
+
+    // State for comparison
+    const [comparingIds, setComparingIds] = useState<string[]>([]);
+    const [isComparing, setIsComparing] = useState(false);
+
+    const { theme } = useContext(ThemeContext);
+    
+    const handleSelectForCompare = (id: string) => {
+        setComparingIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
+    };
+
+    const handlePauseResume = (id: string) => {
+        setUserStrategies(prev => prev.map(s => s.id === id ? { ...s, status: s.status === 'Active' ? 'Paused' : 'Active' } : s));
+    };
+    
+    const getChartVisualizations = () => {
+        if (!currentConfig) return {};
+        
+        if (selectedStrategyType === 'Advanced Grid') {
+            const gridConfig = currentConfig as GridConfig;
+            const gridLines = [];
+            
+            if (gridConfig.gridCount > 0 && gridConfig.upperPrice > gridConfig.lowerPrice) {
+                 const step = (gridConfig.upperPrice - gridConfig.lowerPrice) / gridConfig.gridCount;
+                 for (let i = 0; i <= gridConfig.gridCount; i++) {
+                    gridLines.push({ price: gridConfig.lowerPrice + i * step, color: 'rgba(160, 174, 192, 0.5)', label: `Lvl ${i}` });
+                }
+            }
+
+            if (gridConfig.lowerPrice) gridLines.push({ price: gridConfig.lowerPrice, color: '#10b981', label: 'Lower Price' });
+            if (gridConfig.upperPrice) gridLines.push({ price: gridConfig.upperPrice, color: '#ef4444', label: 'Upper Price' });
+            if(gridConfig.stopLossPrice > 0) {
+                 gridLines.push({ price: gridConfig.stopLossPrice, color: '#f59e0b', label: 'Stop Loss' });
+            }
+            return { gridLines };
+        }
+        
+        if (selectedStrategyType === 'Advanced DCA') {
+             return { rsiData: mockRsiData };
+        }
+
+        return {};
+    };
+
+    const startCreation = (type: StrategyType, initialConf = {}) => {
+        setSelectedStrategyType(type);
+        setCurrentConfig(initialConf);
+        setView('config');
+        setCurrentPair('BTC/USDT');
+    };
+    
+    const handleUseTemplate = (template: StrategyTemplate) => {
+        startCreation(template.type, template.config);
+    };
+
+    const handleEditStrategy = (strategy: UserStrategy) => {
+        setEditingStrategy(strategy);
+        startCreation(strategy.type, strategy.config);
+        setCurrentPair(strategy.pair);
+    };
+    
+    const handleSaveStrategy = () => {
+        if (!currentConfig || !selectedStrategyType) return;
+        if (editingStrategy) {
+            setUserStrategies(prev => prev.map(s => s.id === editingStrategy.id ? { ...s, pair: currentPair, config: currentConfig } : s));
+        } else {
+             const newStrategy: UserStrategy = {
+                id: `us-${Date.now()}`, name: `New ${selectedStrategyType}`, type: selectedStrategyType,
+                pair: currentPair, status: 'Active', pnl: 0, config: currentConfig,
+            };
+            setUserStrategies(prev => [newStrategy, ...prev]);
+        }
+        setView('list');
+        setEditingStrategy(null);
+    };
+
+    const handleSaveTemplate = () => {
+        if (!currentConfig || !selectedStrategyType) return;
+        const name = prompt("Enter a name for this template:", `My ${selectedStrategyType} Template`);
+        if (name) {
+            const newTemplate: StrategyTemplate = {
+                id: `st-${Date.now()}`, name, type: selectedStrategyType, config: currentConfig,
+            };
+            setTemplates(prev => [...prev, newTemplate]);
+            alert(`Template "${name}" saved!`);
+        }
+    };
+
+    const renderConfigPanel = () => {
+        if (!currentConfig) return null;
+        switch (selectedStrategyType) {
+            case 'Advanced DCA':
+                return <DcaBotConfigPanel config={currentConfig} onConfigChange={setCurrentConfig} onSave={handleSaveStrategy} onSaveTemplate={handleSaveTemplate} />;
+            case 'Advanced Grid':
+                return <GridBotConfigPanel config={currentConfig} onConfigChange={setCurrentConfig} onSave={handleSaveStrategy} onSaveTemplate={handleSaveTemplate} />;
+            case 'Quantitative Strategy':
+                return <QuantitativeStrategyConfigPanel config={currentConfig} onConfigChange={setCurrentConfig} onSave={handleSaveStrategy} onSaveTemplate={handleSaveTemplate} />;
+            default:
+                return <Card><p>This strategy is not yet configurable.</p></Card>;
+        }
+    };
+    
+    const getStatusClasses = (status: UserStrategy['status']) => {
+        switch (status) {
+            case 'Active': return 'bg-success/10 text-success';
+            case 'Paused': return 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-300';
+            case 'Error': return 'bg-danger/10 text-danger';
+        }
+    };
+
+    if (view === 'config') {
+        const chartVisuals = getChartVisualizations();
+        const timeframe = (currentConfig as DcaConfig)?.timeframe || '1D';
+
+        return (
+            <div>
+                 <button onClick={() => setView('list')} className="mb-4 text-sm font-semibold text-primary hover:underline flex items-center">
+                    <Icon name="chevronLeft" className="h-4 w-4 mr-1" /> Back to Strategies
+                </button>
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    <div className="lg:col-span-4 xl:col-span-3">
+                        {renderConfigPanel()}
+                    </div>
+                    <div className="lg:col-span-8 xl:col-span-9">
+                         <Card className="h-[80vh] p-0 overflow-hidden">
+                            <TradingChart 
+                                data={mockCandlestickData} 
+                                theme={theme}
+                                symbol={currentPair}
+                                exchange="BINANCE"
+                                timeframe={timeframe}
+                                {...chartVisuals}
+                            />
+                        </Card>
+                    </div>
+                </div>
+            </div>
+        )
+    }
+
+    // Main Tabbed View
+    return (
+        <>
+            {isComparing && <ComparisonModal strategyIds={comparingIds} onClose={() => { setIsComparing(false); setComparingIds([]); }} />}
+            <Card>
+                <div className="flex justify-between items-center pb-2 border-b border-gray-200 dark:border-dark-border">
+                    <div className="flex">
+                        <button onClick={() => setActiveTab('my')} className={`px-4 py-2 text-sm font-medium transition-colors ${activeTab === 'my' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-gray-700 dark:text-dark-text-secondary dark:hover:text-white'}`}>My Strategies ({userStrategies.length})</button>
+                        <button onClick={() => setActiveTab('market')} className={`px-4 py-2 text-sm font-medium transition-colors ${activeTab === 'market' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-gray-700 dark:text-dark-text-secondary dark:hover:text-white'}`}>Strategy Marketplace</button>
+                        <button onClick={() => setActiveTab('templates')} className={`px-4 py-2 text-sm font-medium transition-colors ${activeTab === 'templates' ? 'border-b-2 border-primary text-primary' : 'text-gray-500 hover:text-gray-700 dark:text-dark-text-secondary dark:hover:text-white'}`}>Templates ({templates.length})</button>
+                    </div>
+                </div>
+
+                {/* My Strategies Tab */}
+                {activeTab === 'my' && (
+                    <div className="pt-4">
+                        <div className="flex justify-between items-center mb-4">
+                            <button onClick={() => setIsComparing(true)} disabled={comparingIds.length < 2} className="bg-primary/10 text-primary font-semibold py-2 px-4 rounded-lg hover:bg-primary/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center text-sm">
+                                <Icon name="compare" className="h-4 w-4 mr-2" />
+                                Compare Selected ({comparingIds.length})
+                            </button>
+                            <button onClick={() => setActiveTab('market')} className="bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:bg-primary-hover transition-colors flex items-center text-sm">
+                                <Icon name="plus" className="h-4 w-4 mr-2" />
+                                Create New Strategy
+                            </button>
+                        </div>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                                <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-dark-bg-secondary dark:text-dark-text-secondary">
+                                    <tr>
+                                        <th className="px-1 py-3 w-8"></th>
+                                        <th className="px-6 py-3 text-left">Strategy Name</th>
+                                        <th className="px-6 py-3">Type</th>
+                                        <th className="px-6 py-3">Status</th>
+                                        <th className="px-6 py-3">PnL</th>
+                                        <th className="px-6 py-3">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                {userStrategies.map(s => (
+                                    <tr key={s.id} className="border-b dark:border-dark-border hover:bg-gray-50 dark:hover:bg-dark-bg-secondary">
+                                        <td className="px-1 py-4 text-center">
+                                            <input type="checkbox" checked={comparingIds.includes(s.id)} onChange={() => handleSelectForCompare(s.id)} className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary" />
+                                        </td>
+                                        <td className="px-6 py-4 font-semibold text-gray-800 dark:text-white">{s.name}<p className="font-normal text-xs text-gray-400">{s.pair}</p></td>
+                                        <td className="px-6 py-4">{s.type}</td>
+                                        <td className="px-6 py-4"><span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusClasses(s.status)}`}>{s.status}</span></td>
+                                        <td className={`px-6 py-4 font-semibold ${s.pnl >= 0 ? 'text-success' : 'text-danger'}`}>{s.pnl.toFixed(2)}</td>
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center space-x-3">
+                                                <button onClick={() => handlePauseResume(s.id)} title={s.status === 'Active' ? 'Pause' : 'Resume'} className="text-gray-400 hover:text-primary"><Icon name={s.status === 'Active' ? 'pause' : 'play'} className="h-5 w-5"/></button>
+                                                <button onClick={() => handleEditStrategy(s)} title="Edit" className="text-gray-400 hover:text-primary"><Icon name="edit" className="h-5 w-5"/></button>
+                                                <button title="Clone" className="text-gray-400 hover:text-primary"><Icon name="clone" className="h-5 w-5"/></button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                )}
+
+                {/* Strategy Marketplace Tab */}
+                {activeTab === 'market' && (
+                    <div className="pt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {strategyMarketplace.map(s => (
+                            <div key={s.type} className="border dark:border-dark-border rounded-lg p-4 flex items-start justify-between hover:bg-gray-50 dark:hover:bg-dark-bg-secondary">
+                                <div>
+                                    <h4 className="font-bold flex items-center"><Icon name={s.icon} className="h-5 w-5 mr-2 text-primary" />{s.type}</h4>
+                                    <p className="text-xs text-gray-500 dark:text-dark-text-secondary mt-1">{s.description}</p>
+                                </div>
+                                <button onClick={() => startCreation(s.type as StrategyType, {})} className="bg-primary text-white font-semibold py-1 px-3 rounded-lg hover:bg-primary-hover text-xs whitespace-nowrap">
+                                    Create Bot
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                )}
+                
+                {/* Templates Tab */}
+                {activeTab === 'templates' && (
+                     <div className="pt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {templates.map(t => (
+                            <div key={t.id} className="border dark:border-dark-border rounded-lg p-4">
+                                <h4 className="font-bold">{t.name}</h4>
+                                <p className="text-xs bg-gray-100 dark:bg-dark-bg-secondary inline-block px-2 py-0.5 rounded-md my-2">{t.type}</p>
+                                <div className="mt-4 flex space-x-2">
+                                     <button onClick={() => handleUseTemplate(t)} className="flex-1 bg-primary text-white font-semibold py-1.5 px-3 rounded-lg hover:bg-primary-hover text-xs">Use Template</button>
+                                     <button className="flex-1 bg-gray-200 dark:bg-dark-bg-secondary font-semibold py-1.5 px-3 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-700 text-xs">Delete</button>
+                                </div>
+                            </div>
+                        ))}
+                         {templates.length === 0 && <p className="text-center p-8 text-gray-500 col-span-full">You have no saved templates.</p>}
+                    </div>
+                )}
+
+            </Card>
+        </>
+    );
+};
+
+export default StrategiesView;
