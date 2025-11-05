@@ -7,7 +7,7 @@ export default defineConfig(({ mode }) => {
     return {
       server: {
         port: 3000,
-        host: '5dcf3b80-22c5-4641-82ac-78770a8277a8-00-3mv4sle4fdagp.kirk.replit.dev',
+        host: '0.0.0.0',
       },
       plugins: [react()],
       define: {
