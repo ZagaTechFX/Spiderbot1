@@ -4,7 +4,7 @@ import Card from '../../components/Card';
 import ToggleSwitch from '../../components/ToggleSwitch';
 import { UserStrategy, StrategyTemplate, DcaConfig, GridConfig, AlgoStrategyConfig, CandlestickData, StrategyType, NormalGridConfig, NormalDCAConfig, TrendFollowingConfig, MeanReversionConfig, VolatilityBreakoutConfig, TradingViewWebhookConfig, DipAnalyserConfig, SignalBotConfig } from '../../types';
 import Icon from '../../components/Icon';
-import TradingChart from '../../components/TradingChart';
+import AdvancedTradingChart from '../../components/AdvancedTradingChart';
 import { ThemeContext } from '../../App';
 import { UTCTimestamp } from 'lightweight-charts';
 import NormalGridConfigPanel from '../../components/strategies/NormalGridConfigPanel';
@@ -777,7 +777,7 @@ const StrategiesView: React.FC = () => {
                     </div>
                     <div className="lg:col-span-8 xl:col-span-9">
                          <Card className="h-[80vh] p-0 overflow-hidden">
-                            <TradingChart 
+                            <AdvancedTradingChart 
                                 data={mockCandlestickData} 
                                 theme={theme}
                                 symbol={currentPair}
