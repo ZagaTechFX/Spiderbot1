@@ -1,0 +1,65 @@
+TradingView Webhook Bot settings - Refinement based on your provided structure.
+Setting Name	Input Type	Interpretation & Purpose
+Webhook URL	Text Input	Endpoint for receiving TradingView alerts.
+Alert Parser	JSON Template	Defines how to extract action, ticker, and size from the incoming alert message body.
+Signal Source Trust Score	Numeric (1-10)	Dynamic Sizing: Position size is dynamically weighted based on the signal provider's historical reliability or an internal ranking.
+Maximum Slippage	Percentage	Rejects trade fills if the executed price is worse than the alert price by this threshold.
+Order Timeout	Seconds	Cancels market/limit orders if not filled within the time limit.
+Position Size Override	Radio Button (Use Signal/Fixed %)	Allows the user to ignore the position size in the signal and use a fixed percentage of their own capital.
+Daily Loss Limit	Percentage	Stops all further trading for $24\text{h}$ after cumulative loss for the day hits the limit.
+Max Exchange API Rate Usage	Percentage	A soft throttle to limit the bot's API calls, preventing connectivity issues with other systems.
+
+
+
+
+Trade Execution & Order Management
+Setting Name	Input Type	Interpretation & Purpose
+Order Type Default	Radio Button (Market, Limit, Post Only Limit)	Defines the type of order the bot should use by default when receiving a signal, if the signal doesn't specify one.
+Max Open Positions	Numeric (Integer)	Limits the total number of simultaneous open trades/positions the bot can manage across all tickers.
+Minimum Position Size	Numeric (Value or Percentage)	Rejects signals if the calculated position size (after dynamic sizing) is below the minimum allowed by the exchange or user's preference, preventing dust trades.
+Take Profit Percentage	Numeric (Percentage)	A default or mandatory setting to automatically place a Take Profit order at a specified percentage gain from the entry price, if the signal doesn't include one.
+Stop Loss Percentage	Numeric (Percentage)	A default or mandatory setting to automatically place a Stop Loss order at a specified percentage loss from the entry price, if the signal doesn't include one.
+
+
+
+Risk & Strategy Controls
+Setting Name	Input Type	Interpretation & Purpose
+Global Capital Allocation	Percentage	The maximum total percentage of the user's available capital the bot is allowed to use across all open positions.
+Max Position Leverage	Numeric (e.g., $1\text{x}$ to $10\text{x}$)	Caps the maximum leverage the bot can use, overriding a higher leverage specified by the signal for risk control.
+Daily Trade Count Limit	Numeric (Integer)	Limits the total number of trades (entries/exits) the bot can execute in a $24\text{h}$ period to prevent over-trading.
+Ignore Tickers List	Text Area (Comma-separated list)	A blacklist of specific assets (e.g., BTC/USDT) that the bot should ignore, even if a signal is received.
+Connectivity & Logging
+Setting Name	Input Type	Interpretation & Purpose
+Confirmation Webhook URL	Text Input	An optional second endpoint to send a confirmation response after a trade has been successfully placed/filled, useful for connecting back to a dashboard or a logging system.
+Log Level	Dropdown (Info, Debug, Error)	Controls the verbosity of the bot's internal logging system.
+Time Zone Setting	Dropdown (List of Timezones)	Ensures all time-based features (like Daily Loss Limit reset) align with the user's local time or a standard exchange time.
+
+
+
+
+Advanced Performance & Strategy Settings
+Setting Name	Input Type	Interpretation & Purpose
+Partial Fill Handling	Radio Button (Cancel Remainder, Wait for Fill)	Determines the bot's action if a limit order is only partially filled (e.g., $50\%$ of the size). Cancel Remainder places a new order for the rest; Wait for Fill keeps the order active.
+Cooldown Period (per Ticker)	Seconds	After an exit signal for a specific ticker (e.g., BTC/USDT) is processed, the bot ignores any new entry signals for that ticker for this duration. Purpose: Prevents immediate re-entry on whipsaws.
+Trailing Stop Activation	Percentage	The profit threshold (e.g., $+2\%$) after which the bot automatically converts the fixed Stop Loss (if present) into a Trailing Stop Loss.
+Max Drawdown (Account Level)	Percentage	A critical Global Kill Switch. If the total floating or realized loss on the entire portfolio hits this percentage (e.g., $-20\%$), the bot immediately closes all open positions and pauses all trading.
+________________________________________
+🛡️ Safety & Exchange Interaction Settings
+Setting Name	Input Type	Interpretation & Purpose
+Exchange Time Offset	Numeric (Milliseconds or Seconds)	Accounts for potential clock drift between the bot's server and the exchange's server. Crucial for signed API requests to prevent authentication failures.
+Execution Environment	Dropdown (Live Trading, Paper Trading)	A quick switch for the user to select between using real exchange capital and using a simulated/paper trading account with the same API keys. Safety check.
+Whitelisted IP Addresses	Text Area (Comma-separated list)	Forces the bot to only accept webhook alerts originating from a specific list of IP addresses (like TradingView's official IPs) for enhanced security against spoofing.
+By adding settings like Cooldown Period and Max Drawdown (Account Level), you move the bot from just executing trades to actively managing market noise and catastrophic risk, making it far more sophisticated.
+
+
+
+Cost & Fee Optimization
+Setting Name	Input Type	Interpretation & Purpose
+Max Trade Fee Percentage	Percentage	A strict limit on the maximum accepted trading fee (taker or maker). If the bot calculates that the effective fee for an order will exceed this limit (e.g., during high-volume periods or for specific assets), the trade is rejected.
+Minimum Profit Target ($)	Currency Value	Rejects trades where the calculated potential profit (based on signal or default TP setting) is less than the expected combined round-trip fees. Purpose: Ensures trades are financially viable and not just fee generators.
+📊 Multi-Strategy & Multi-Account Management
+Setting Name	Input Type	Interpretation & Purpose
+Strategy Tag/ID	Text Input	A unique identifier for the set of settings and the strategies that use this bot. Purpose: Allows a single bot instance to manage alerts from different TradingView scripts, making logs and performance tracking easier.
+Account Mode	Dropdown (Single, Master/Sub-Account)	For users with managed funds or multiple accounts. If Master/Sub-Account is selected, additional fields appear for managing size allocation across linked sub-accounts.
+Webhook Retry Mechanism	Dropdown (Exponential Backoff, Fixed Delay)	Defines the strategy for retrying a failed connection to the exchange (e.g., during brief API downtimes). This adds resilience to the bot.
+

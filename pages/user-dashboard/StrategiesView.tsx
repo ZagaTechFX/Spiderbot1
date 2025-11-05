@@ -2,11 +2,18 @@
 import React, { useState, useContext } from 'react';
 import Card from '../../components/Card';
 import ToggleSwitch from '../../components/ToggleSwitch';
-import { UserStrategy, StrategyTemplate, DcaConfig, GridConfig, AlgoStrategyConfig, CandlestickData, StrategyType } from '../../types';
+import { UserStrategy, StrategyTemplate, DcaConfig, GridConfig, AlgoStrategyConfig, CandlestickData, StrategyType, NormalGridConfig, NormalDCAConfig, TrendFollowingConfig, MeanReversionConfig, VolatilityBreakoutConfig, TradingViewWebhookConfig, DipAnalyserConfig, SignalBotConfig, UTCTimestamp } from '../../types';
 import Icon from '../../components/Icon';
-import TradingChart from '../../components/TradingChart';
+import TradingViewWidget from '../../components/TradingViewWidget';
 import { ThemeContext } from '../../App';
-import { UTCTimestamp } from 'lightweight-charts';
+import NormalGridConfigPanel from '../../components/strategies/NormalGridConfigPanel';
+import NormalDCAConfigPanel from '../../components/strategies/NormalDCAConfigPanel';
+import TrendFollowingConfigPanel from '../../components/strategies/TrendFollowingConfigPanel';
+import MeanReversionConfigPanel from '../../components/strategies/MeanReversionConfigPanel';
+import VolatilityBreakoutConfigPanel from '../../components/strategies/VolatilityBreakoutConfigPanel';
+import TradingViewWebhookConfigPanel from '../../components/strategies/TradingViewWebhookConfigPanel';
+import DipAnalyserConfigPanel from '../../components/strategies/DipAnalyserConfigPanel';
+import SignalBotConfigPanel from '../../components/strategies/SignalBotConfigPanel';
 
 // --- MOCK DATA ---
 const mockUserStrategies: UserStrategy[] = [
@@ -19,8 +26,15 @@ const mockUserStrategies: UserStrategy[] = [
 const strategyMarketplace = [
     { type: 'Advanced DCA', description: 'A robust strategy that averages down your entry price by placing subsequent buy orders if the price moves against you.', icon: 'arrowDown' },
     { type: 'Advanced Grid', description: 'Uses manual or AI-powered ranges to set up a grid of buy and sell orders to profit from volatility.', icon: 'bot' },
+    { type: 'Normal Grid', description: 'Simplified grid trading bot with basic upper/lower price range and grid count settings for range-bound markets.', icon: 'bot' },
+    { type: 'Normal DCA', description: 'Basic dollar-cost averaging bot with simple safety orders and take profit settings for accumulation strategies.', icon: 'arrowDown' },
     { type: 'Quantitative Strategy', description: 'Deploys advanced algorithmic models like trend-following, mean reversion, or statistical arbitrage.', icon: 'beaker' },
-    { type: 'Signal Bot', description: 'Executes trades based on external signals from sources like TradingView, Telegram, or custom APIs.', icon: 'trades' },
+    { type: 'Signal Bot', description: 'Executes trades based on external signals from sources like TradingView, Telegram, or custom APIs with institutional-grade controls.', icon: 'trades' },
+    { type: 'TradingView Webhook Bot', description: 'Automated trading bot that receives and executes TradingView alerts via webhook with advanced risk management and execution controls.', icon: 'bell' },
+    { type: 'Dip Analyser Bot', description: 'Institutional dip-buying strategy with Smart Money Concepts, structural filters, TWAP execution, and forced accumulation mode.', icon: 'chart' },
+    { type: 'Trend-Following Bot', description: 'EMA Crossover strategy with ATR-based filters and trailing stops for capturing sustained market trends.', icon: 'trending' },
+    { type: 'Mean Reversion Bot', description: 'Z-Score and RSI-based mean reversion strategy for trading oversold/overbought conditions in ranging markets.', icon: 'activity' },
+    { type: 'Volatility Breakout Bot', description: 'Donchian/Keltner channel breakout strategy with time-of-day filters for capturing volatility expansion moves.', icon: 'lightning' },
 ];
 
 const mockStrategyTemplates: StrategyTemplate[] = [
@@ -294,6 +308,7 @@ const GridBotConfigPanel: React.FC<{ config: GridConfig; onConfigChange: (newCon
 };
 
 const QuantitativeStrategyConfigPanel: React.FC<{ config: AlgoStrategyConfig; onConfigChange: (newConfig: AlgoStrategyConfig) => void; onSave: () => void; onSaveTemplate: () => void; }> = ({ config, onConfigChange, onSave, onSaveTemplate }) => {
+    const [activeCategory, setActiveCategory] = useState<'core' | 'risk' | 'execution' | 'compliance' | 'operational' | 'adaptive'>('core');
     
     const handleChange = (field: keyof AlgoStrategyConfig) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement> | boolean | 'SPOT' | 'FUTURES') => {
         const value = typeof e === 'boolean' || e === 'SPOT' || e === 'FUTURES'
@@ -303,70 +318,223 @@ const QuantitativeStrategyConfigPanel: React.FC<{ config: AlgoStrategyConfig; on
         onConfigChange({ ...config, [field]: value });
     };
 
+    const categories = [
+        { id: 'core', label: 'Core Logic', icon: 'beaker' },
+        { id: 'risk', label: 'Risk Management', icon: 'shield' },
+        { id: 'execution', label: 'Execution', icon: 'flash' },
+        { id: 'compliance', label: 'Compliance', icon: 'file' },
+        { id: 'operational', label: 'Operational', icon: 'settings' },
+        { id: 'adaptive', label: 'Adaptive & Model Risk', icon: 'trending' },
+    ];
+
     return (
         <Card>
-            <h3 className="text-lg font-bold mb-4">Configure Quantitative Strategy</h3>
-            <div className="space-y-6 max-h-[70vh] overflow-y-auto pr-2">
-                 <MarketTypeSelector value={config.marketType} onChange={handleChange('marketType')} />
-                 <Section title="Core Strategy Logic">
-                    <SelectField label="Algorithmic Model" value={config.model} onChange={handleChange('model')}>
-                        <option value="Trend-Following">Trend-Following</option>
-                        <option value="Mean Reversion">Mean Reversion</option>
-                        <option value="Volatility Breakout">Volatility Breakout</option>
-                        <option value="Pairs/Stat-Arb">Pairs/Stat-Arb</option>
-                    </SelectField>
-                    <InputField label="Primary Entry Signal" value={config.primaryEntrySignal} onChange={handleChange('primaryEntrySignal')} helpText="e.g., EMA 50 cross EMA 200" />
-                    <InputField label="Confirmation Filter" value={config.confirmationFilter} onChange={handleChange('confirmationFilter')} helpText="e.g., ATR > 10 or RSI < 30" />
-                    <InputField label="Market Regime Filter" value={config.regimeFilter} onChange={handleChange('regimeFilter')} helpText="e.g., ADX > 20 or Volatility < 3%" />
-                </Section>
-                {config.model === 'Pairs/Stat-Arb' && (
-                    <Section title="Pairs Trading Settings">
-                         <InputField label="Pair Selection" value={config.pairSelection} onChange={handleChange('pairSelection')} helpText="Comma-separated pairs, e.g., BTC/USDT,ETH/USDT" />
-                         <InputField label="Z-Score Entry Threshold" type="number" value={config.zScoreEntry} onChange={handleChange('zScoreEntry')} />
-                         <InputField label="Z-Score Exit Threshold" type="number" value={config.zScoreExit} onChange={handleChange('zScoreExit')} />
-                         <ToggleField label="Structural Break Detection" enabled={config.useStructuralBreakDetection} onChange={handleChange('useStructuralBreakDetection')} helpText="Monitor for breakdown of cointegration" />
-                    </Section>
+            <h3 className="text-lg font-bold mb-4">Institutional Algorithmic Strategy</h3>
+            
+            <div className="flex gap-2 mb-4 overflow-x-auto pb-2">
+                {categories.map((cat) => (
+                    <button
+                        key={cat.id}
+                        onClick={() => setActiveCategory(cat.id as any)}
+                        className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
+                            activeCategory === cat.id
+                                ? 'bg-primary text-white'
+                                : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                        }`}
+                    >
+                        <Icon name={cat.icon} className="h-4 w-4" />
+                        <span>{cat.label}</span>
+                    </button>
+                ))}
+            </div>
+
+            <div className="space-y-6 max-h-[65vh] overflow-y-auto pr-2">
+                <MarketTypeSelector value={config.marketType} onChange={handleChange('marketType')} />
+
+                {activeCategory === 'core' && (
+                    <>
+                        <Section title="Core Strategy Logic">
+                            <SelectField label="Algorithmic Model" value={config.model} onChange={handleChange('model')}>
+                                <option value="Trend-Following">Trend-Following</option>
+                                <option value="Mean Reversion">Mean Reversion</option>
+                                <option value="Volatility Breakout">Volatility Breakout</option>
+                                <option value="Pairs/Stat-Arb">Pairs/Stat-Arb</option>
+                            </SelectField>
+                            <InputField label="Primary Entry Signal" value={config.primaryEntrySignal} onChange={handleChange('primaryEntrySignal')} helpText="e.g., EMA 50 cross EMA 200" />
+                            <InputField label="Confirmation Filter" value={config.confirmationFilter} onChange={handleChange('confirmationFilter')} helpText="e.g., ATR > 10 or RSI < 30" />
+                            <SelectField label="Regime Filter" value={config.regimeFilter} onChange={handleChange('regimeFilter')}>
+                                <option value="None">None</option>
+                                <option value="ADX">ADX</option>
+                                <option value="Volatility">Volatility</option>
+                            </SelectField>
+                        </Section>
+                        {config.model === 'Pairs/Stat-Arb' && (
+                            <Section title="Pairs Trading Settings">
+                                <InputField label="Pair Selection" value={config.pairSelection} onChange={handleChange('pairSelection')} helpText="e.g., BTC/USDT,ETH/USDT" />
+                                <InputField label="Z-Score Entry" type="number" value={config.zScoreEntry} onChange={handleChange('zScoreEntry')} step="0.1" />
+                                <InputField label="Z-Score Exit" type="number" value={config.zScoreExit} onChange={handleChange('zScoreExit')} step="0.1" />
+                                <ToggleField label="Structural Break Detection" enabled={config.useStructuralBreakDetection} onChange={handleChange('useStructuralBreakDetection')} />
+                            </Section>
+                        )}
+                    </>
                 )}
-                 <Section title="Universal Risk Management">
-                    <InputField label="ATR Multiplier for Stops" type="number" value={config.atrMultiplierForStops} onChange={handleChange('atrMultiplierForStops')} helpText="Sets Stop-Loss based on volatility." />
-                    <InputField label="Maximum Holding Period" type="number" value={config.maxHoldingPeriod} onChange={handleChange('maxHoldingPeriod')} unit="days" />
-                    <ToggleField label="Extreme Volatility Filter" enabled={config.useVolatilityFilter} onChange={handleChange('useVolatilityFilter')} />
-                    <ToggleField label="Correlation Awareness" enabled={config.useCorrelationAwareness} onChange={handleChange('useCorrelationAwareness')} helpText="Reject trade if highly correlated with an open position." />
-                </Section>
-                 <Section title="Execution & Order Management">
-                    <InputField label="Max Position Size" type="number" value={config.maxPositionSize} onChange={handleChange('maxPositionSize')} unit="USD" />
-                    <InputField label="Max Daily Loss" type="number" value={config.maxDailyLoss} onChange={handleChange('maxDailyLoss')} unit="USD" />
-                    <InputField label="Slippage Tolerance" type="number" value={config.slippageTolerance} onChange={handleChange('slippageTolerance')} unit="%" />
-                    <SelectField label="Default Order Type" value={config.orderType} onChange={handleChange('orderType')}>
-                        {['Market', 'Limit', 'IOC', 'FOK'].map(o => <option key={o} value={o}>{o}</option>)}
-                    </SelectField>
-                </Section>
-                <Section title="Advanced Portfolio Risk">
-                    <InputField label="Max Portfolio Drawdown" type="number" value={config.maxPortfolioDrawdown} onChange={handleChange('maxPortfolioDrawdown')} unit="%" helpText="Halts all strategies if breached." />
-                    <InputField label="Value at Risk (VaR) Limit" type="number" value={config.varLimit} onChange={handleChange('varLimit')} unit="USD" />
-                    <InputField label="Max Portfolio Leverage" type="number" value={config.maxPortfolioLeverage} onChange={handleChange('maxPortfolioLeverage')} unit="x" />
-                    <InputField label="Inter-Strategy Correlation Filter" type="number" value={config.interStrategyCorrelationFilter} onChange={handleChange('interStrategyCorrelationFilter')} helpText="e.g., 0.7" />
-                </Section>
-                <Section title="Model Risk & Adaptivity">
-                     <ToggleField label="Use Adaptive Parameters" enabled={config.useAdaptiveParameters} onChange={handleChange('useAdaptiveParameters')} helpText="Allows bot to self-adjust parameters." />
-                     <InputField label="Adaptive Parameter Range" type="number" value={config.adaptiveParameterRange} onChange={handleChange('adaptiveParameterRange')} unit="%" />
-                     <SelectField label="Performance Degradation Action" value={config.performanceDegradationAction} onChange={handleChange('performanceDegradationAction')}>
-                        <option value="Alert">Alert</option>
-                        <option value="Pause">Pause</option>
-                        <option value="Re-calibrate">Re-calibrate</option>
-                    </SelectField>
-                </Section>
+
+                {activeCategory === 'risk' && (
+                    <>
+                        <Section title="Universal Risk Controls">
+                            <InputField label="ATR Multiplier for Stops" type="number" value={config.atrMultiplierForStops} onChange={handleChange('atrMultiplierForStops')} step="0.1" helpText="Volatility-adjusted stops" />
+                            <InputField label="Max Holding Period" type="number" value={config.maxHoldingPeriod} onChange={handleChange('maxHoldingPeriod')} unit="days" />
+                            <ToggleField label="Extreme Volatility Filter" enabled={config.useVolatilityFilter} onChange={handleChange('useVolatilityFilter')} />
+                            {config.useVolatilityFilter && (
+                                <InputField label="Volatility Filter ATR Multiple" type="number" value={config.volatilityFilterATR} onChange={handleChange('volatilityFilterATR')} step="0.1" />
+                            )}
+                            <ToggleField label="Correlation Awareness" enabled={config.useCorrelationAwareness} onChange={handleChange('useCorrelationAwareness')} />
+                        </Section>
+                        <Section title="Portfolio-Level Risk">
+                            <InputField label="Max Portfolio Drawdown" type="number" value={config.maxPortfolioDrawdown} onChange={handleChange('maxPortfolioDrawdown')} unit="%" helpText="Auto-halts all strategies" />
+                            <InputField label="Value at Risk (VaR) Limit" type="number" value={config.varLimit} onChange={handleChange('varLimit')} unit="USD" />
+                            <InputField label="Max Portfolio Leverage" type="number" value={config.maxPortfolioLeverage} onChange={handleChange('maxPortfolioLeverage')} unit="x" step="0.1" />
+                            <InputField label="Liquidity Depth Threshold" type="number" value={config.liquidityDepthThreshold} onChange={handleChange('liquidityDepthThreshold')} unit="USD" helpText="Min order book depth" />
+                            <InputField label="Inter-Strategy Correlation Limit" type="number" value={config.interStrategyCorrelationFilter} onChange={handleChange('interStrategyCorrelationFilter')} step="0.01" helpText="Max 0.0-1.0" />
+                        </Section>
+                        <Section title="Portfolio Construction">
+                            <InputField label="Target Portfolio Beta" type="number" value={config.targetPortfolioBeta} onChange={handleChange('targetPortfolioBeta')} step="0.1" helpText="vs. benchmark" />
+                            <InputField label="Asset Class Exposure Cap" type="number" value={config.assetClassExposureCap} onChange={handleChange('assetClassExposureCap')} unit="%" />
+                            <SelectField label="Capital Allocation Method" value={config.riskBasedCapitalAllocation} onChange={handleChange('riskBasedCapitalAllocation')}>
+                                <option value="Equal-Weight">Equal-Weight</option>
+                                <option value="Risk-Parity">Risk-Parity</option>
+                                <option value="Kelly">Kelly Criterion</option>
+                            </SelectField>
+                            <InputField label="Dynamic Rebalance Threshold" type="number" value={config.dynamicRebalanceThreshold} onChange={handleChange('dynamicRebalanceThreshold')} unit="%" />
+                            <InputField label="Rebalance Time Interval" value={config.rebalanceTimeInterval} onChange={handleChange('rebalanceTimeInterval')} helpText="e.g., daily, weekly, monthly" />
+                        </Section>
+                    </>
+                )}
+
+                {activeCategory === 'execution' && (
+                    <>
+                        <Section title="Execution & Order Management">
+                            <InputField label="Max Position Size" type="number" value={config.maxPositionSize} onChange={handleChange('maxPositionSize')} unit="USD" />
+                            <InputField label="Max Daily Loss" type="number" value={config.maxDailyLoss} onChange={handleChange('maxDailyLoss')} unit="USD" />
+                            <InputField label="Max Weekly Loss" type="number" value={config.maxWeeklyLoss} onChange={handleChange('maxWeeklyLoss')} unit="USD" />
+                            <InputField label="Slippage Tolerance" type="number" value={config.slippageTolerance} onChange={handleChange('slippageTolerance')} unit="%" step="0.01" />
+                            <SelectField label="Default Order Type" value={config.orderType} onChange={handleChange('orderType')}>
+                                <option value="Market">Market</option>
+                                <option value="Limit">Limit</option>
+                                <option value="IOC">Immediate-or-Cancel (IOC)</option>
+                                <option value="FOK">Fill-or-Kill (FOK)</option>
+                            </SelectField>
+                            <SelectField label="Partial Fill Handling" value={config.partialFillHandling} onChange={handleChange('partialFillHandling')}>
+                                <option value="Wait">Wait for Complete Fill</option>
+                                <option value="Cancel Remainder">Cancel Remainder</option>
+                            </SelectField>
+                        </Section>
+                        <Section title="Advanced Risk & System Health">
+                            <ToggleField label="Circuit Breaker" enabled={config.circuitBreakerEnabled} onChange={handleChange('circuitBreakerEnabled')} helpText="Monitors exchange halts" />
+                            <InputField label="Max Open Positions" type="number" value={config.maxOpenPositions} onChange={handleChange('maxOpenPositions')} helpText="Total across all bots" />
+                            <ToggleField label="Time-of-Day Filter" enabled={config.useTimeOfDayFilter} onChange={handleChange('useTimeOfDayFilter')} />
+                            {config.useTimeOfDayFilter && (
+                                <>
+                                    <InputField label="Trading Hours Start" type="time" value={config.tradingHoursStart} onChange={handleChange('tradingHoursStart')} />
+                                    <InputField label="Trading Hours End" type="time" value={config.tradingHoursEnd} onChange={handleChange('tradingHoursEnd')} />
+                                </>
+                            )}
+                            <InputField label="Trade Velocity Limit" type="number" value={config.tradeVelocityLimit} onChange={handleChange('tradeVelocityLimit')} unit="orders/min" />
+                            <SelectField label="Commission Fee Model" value={config.commissionFeeModel} onChange={handleChange('commissionFeeModel')}>
+                                <option value="Fixed">Fixed Rate</option>
+                                <option value="Maker/Taker Tiers">Maker/Taker Tiers</option>
+                            </SelectField>
+                            <InputField label="Commission Fee" type="number" value={config.commissionFee} onChange={handleChange('commissionFee')} unit="%" step="0.001" />
+                        </Section>
+                    </>
+                )}
+
+                {activeCategory === 'compliance' && (
+                    <>
+                        <Section title="Compliance & Reporting">
+                            <InputField label="Allocation Bucket ID" value={config.allocationBucket} onChange={handleChange('allocationBucket')} helpText="e.g., Fund A, Desk B" />
+                            <SelectField label="Audit Log Verbosity" value={config.auditLogVerbosity} onChange={handleChange('auditLogVerbosity')}>
+                                <option value="Low">Low</option>
+                                <option value="Medium">Medium</option>
+                                <option value="High">High</option>
+                            </SelectField>
+                            <ToggleField label="Post-Trade Reporting Flag" enabled={config.postTradeReportingFlag} onChange={handleChange('postTradeReportingFlag')} />
+                        </Section>
+                        <Section title="Post-Trade & Compliance">
+                            <InputField label="Slippage Report Deviation" type="number" value={config.slippageReportDeviation} onChange={handleChange('slippageReportDeviation')} unit="%" helpText="Alert threshold" />
+                            <SelectField label="Trade Audit Trail Level" value={config.tradeAuditTrailLevel} onChange={handleChange('tradeAuditTrailLevel')}>
+                                <option value="Minimal">Minimal</option>
+                                <option value="Decision-Level">Decision-Level</option>
+                                <option value="Full Tick">Full Tick Data</option>
+                            </SelectField>
+                            <InputField label="Backtest/Live Skew Threshold" type="number" value={config.backtestLiveSkewThreshold} onChange={handleChange('backtestLiveSkewThreshold')} unit="%" helpText="Model drift warning" />
+                        </Section>
+                    </>
+                )}
+
+                {activeCategory === 'operational' && (
+                    <>
+                        <Section title="Operational & System Health">
+                            <ToggleField label="Global Kill Switch" enabled={config.globalKillSwitch} onChange={handleChange('globalKillSwitch')} helpText="Emergency stop all trading" />
+                            <InputField label="Data Feed Latency Threshold" type="number" value={config.dataFeedLatencyThreshold} onChange={handleChange('dataFeedLatencyThreshold')} unit="ms" />
+                            <InputField label="Connectivity Failure Retries" type="number" value={config.connectivityFailureRetries} onChange={handleChange('connectivityFailureRetries')} />
+                            <InputField label="Retry Delay" type="number" value={config.connectivityRetryDelay} onChange={handleChange('connectivityRetryDelay')} unit="seconds" />
+                            <InputField label="Max Order Cancel Rate" type="number" value={config.maxOrderCancelRate} onChange={handleChange('maxOrderCancelRate')} unit="/min" />
+                        </Section>
+                        <Section title="System Integrity & Emergency">
+                            <ToggleField label="Graceful Shutdown Mode" enabled={config.gracefulShutdownMode} onChange={handleChange('gracefulShutdownMode')} helpText="Stop new entries, let exits run" />
+                            <InputField label="Hardware Latency Alert" type="number" value={config.hardwareLatencyAlert} onChange={handleChange('hardwareLatencyAlert')} unit="ms" helpText="CPU/network ping threshold" />
+                        </Section>
+                    </>
+                )}
+
+                {activeCategory === 'adaptive' && (
+                    <>
+                        <Section title="Strategy Adaptivity">
+                            <ToggleField label="Adaptive Parameters" enabled={config.useAdaptiveParameters} onChange={handleChange('useAdaptiveParameters')} helpText="Auto-adjust parameters" />
+                            {config.useAdaptiveParameters && (
+                                <>
+                                    <InputField label="Adaptive Parameter Range" type="number" value={config.adaptiveParameterRange} onChange={handleChange('adaptiveParameterRange')} unit="%" helpText="Max adjustment range" />
+                                    <InputField label="Market Regime Switch Threshold" type="number" value={config.marketRegimeSwitchThreshold} onChange={handleChange('marketRegimeSwitchThreshold')} helpText="e.g., ADX level" />
+                                </>
+                            )}
+                            <SelectField label="Performance Degradation Action" value={config.performanceDegradationAction} onChange={handleChange('performanceDegradationAction')}>
+                                <option value="Alert">Alert Only</option>
+                                <option value="Pause">Pause Strategy</option>
+                                <option value="Re-calibrate">Auto Re-calibrate</option>
+                            </SelectField>
+                            <InputField label="Walk-Forward Analysis Period" type="number" value={config.walkForwardAnalysisPeriod} onChange={handleChange('walkForwardAnalysisPeriod')} unit="days" />
+                        </Section>
+                        <Section title="Model Risk & Decay Management">
+                            <SelectField label="Model Validation Frequency" value={config.modelValidationFrequency} onChange={handleChange('modelValidationFrequency')}>
+                                <option value="Daily">Daily</option>
+                                <option value="Weekly">Weekly</option>
+                                <option value="Monthly">Monthly</option>
+                            </SelectField>
+                            <InputField label="Out-of-Sample Performance Threshold" type="number" value={config.outOfSamplePerformanceThreshold} onChange={handleChange('outOfSamplePerformanceThreshold')} unit="%" helpText="Min % of backtest Sharpe" />
+                            <InputField label="Strategy Decommissioning Logic" type="number" value={config.strategyDecommissioningLogic} onChange={handleChange('strategyDecommissioningLogic')} helpText="Consecutive negative periods" />
+                            <InputField label="Parameter Stability Metric (PSI)" type="number" value={config.parameterStabilityMetric} onChange={handleChange('parameterStabilityMetric')} step="0.01" helpText="Max drift threshold" />
+                            <SelectField label="Trade Rationale Logging" value={config.tradeRationaleLoggingDetail} onChange={handleChange('tradeRationaleLoggingDetail')}>
+                                <option value="Minimal">Minimal</option>
+                                <option value="Decision Tree">Decision Tree</option>
+                                <option value="Full Feature Set">Full Feature Set</option>
+                            </SelectField>
+                        </Section>
+                    </>
+                )}
+
                 {config.marketType === 'FUTURES' && (
                     <Section title="Futures / Margin Settings">
-                        <InputField label="Leverage Ratio" type="number" value={config.leverage} onChange={handleChange('leverage')} unit="x" />
-                         <SelectField label="Margin Mode" value={config.marginMode} onChange={handleChange('marginMode')}>
-                            <option value="Cross">Cross</option>
-                            <option value="Isolated">Isolated</option>
+                        <InputField label="Leverage Ratio" type="number" value={config.leverage} onChange={handleChange('leverage')} unit="x" step="0.1" />
+                        <SelectField label="Margin Mode" value={config.marginMode} onChange={handleChange('marginMode')}>
+                            <option value="Cross">Cross Margin</option>
+                            <option value="Isolated">Isolated Margin</option>
                         </SelectField>
                     </Section>
                 )}
             </div>
-             <div className="mt-6 flex space-x-2">
+            
+            <div className="mt-6 flex space-x-2">
                 <button onClick={onSaveTemplate} className="flex-1 bg-gray-200 dark:bg-dark-bg-secondary py-2 px-4 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-700">Save as Template</button>
                 <button onClick={onSave} className="flex-1 bg-primary text-white py-2 px-4 rounded-lg hover:bg-primary-hover">Save & Start</button>
             </div>
@@ -453,6 +621,29 @@ const StrategiesView: React.FC = () => {
 
     const { theme } = useContext(ThemeContext);
     
+    const getDefaultConfig = (type: StrategyType): any => {
+        switch (type) {
+            case 'Normal Grid':
+                return { marketType: 'SPOT', lowerPrice: 60000, upperPrice: 70000, gridCount: 20, investmentAmount: 1000, gridSpacingType: 'Arithmetic', stopLossPrice: 58000, takeProfitPrice: 72000, leverage: 1, marginMode: 'Isolated' } as NormalGridConfig;
+            case 'Normal DCA':
+                return { marketType: 'SPOT', initialBuy: 100, buyInCallback: 2, takeProfitPercentage: 3, safetyOrderCount: 5, safetyOrderStepPercentage: 2, safetyOrderVolumeMultiplier: 1.5, stopLossPercentage: 10, leverage: 1, marginMode: 'Isolated' } as NormalDCAConfig;
+            case 'Trend-Following Bot':
+                return { marketType: 'SPOT', fastEMAPeriod: 12, slowEMAPeriod: 26, atrPeriod: 14, atrMultiplier: 1.5, positionSize: 5, stopLossATRMultiplier: 2, takeProfitATRMultiplier: 3, trailingStopEnabled: true, leverage: 1, marginMode: 'Isolated' } as TrendFollowingConfig;
+            case 'Mean Reversion Bot':
+                return { marketType: 'SPOT', zScorePeriod: 20, zScoreEntryThreshold: 2, zScoreExitThreshold: 0.5, rsiPeriod: 14, rsiOversold: 30, rsiOverbought: 70, positionSize: 5, stopLossPercentage: 5, takeProfitPercentage: 5, leverage: 1, marginMode: 'Isolated' } as MeanReversionConfig;
+            case 'Volatility Breakout Bot':
+                return { marketType: 'SPOT', breakoutIndicator: 'Donchian', lookbackPeriod: 20, keltnerATRMultiplier: 2, positionSize: 5, stopLossPercentage: 3, takeProfitPercentage: 6, timeOfDayFilterEnabled: false, tradingHoursStart: '09:00', tradingHoursEnd: '16:00', leverage: 1, marginMode: 'Isolated' } as VolatilityBreakoutConfig;
+            case 'TradingView Webhook Bot':
+                return { marketType: 'SPOT', webhookURL: '', alertParser: '{"action": "{{strategy.order.action}}", "ticker": "{{ticker}}"}', signalSourceTrustScore: 7, maximumSlippage: 0.5, orderTimeout: 30, positionSizeOverride: 'Use Signal', fixedPositionSize: 5, dailyLossLimit: 5, maxExchangeAPIRateUsage: 80, orderTypeDefault: 'Market', maxOpenPositions: 5, minimumPositionSize: 10, takeProfitPercentage: 5, stopLossPercentage: 3, globalCapitalAllocation: 50, maxPositionLeverage: 5, dailyTradeCountLimit: 20, ignoreTickersList: '', confirmationWebhookURL: '', logLevel: 'Info', timeZoneSetting: 'UTC', partialFillHandling: 'Wait for Fill', cooldownPeriod: 300, trailingStopActivation: 2, maxDrawdown: 20, exchangeTimeOffset: 0, executionEnvironment: 'Paper Trading', whitelistedIPAddresses: '', maxTradeFeePercentage: 0.1, minimumProfitTarget: 5, strategyTagID: '', accountMode: 'Single', webhookRetryMechanism: 'Exponential Backoff', leverage: 1, marginMode: 'Isolated' } as TradingViewWebhookConfig;
+            case 'Dip Analyser Bot':
+                return { marketType: 'SPOT', dipScoreComponents: { rsiDivergence: true, volumeSpike: true, priceLevelTest: true }, scoreThreshold: 70, minimumDipDepth: 5, timeframeForAnalysis: '4h', buyAggression: 'Moderate', quickProfitTarget: 3, progressiveStop: true, progressiveStopPercentage: 1.5, maximumConcurrentDips: 3, forcedAccumulationMode: false, recoveryConfirmationFilter: 10, liquiditySweepRequirement: false, fvgRetracementPercentage: 50, orderBlockProximityFilter: 1, maxOrderBookSkew: 65, executionSliceSize: 100, twapHorizon: 15, maxCumulativeSlippage: 0.2, dcaTrancheSizeMultiplier: 0.5, dcaProfitExitThreshold: false, dcaProfitExitPercentage: 3, portfolioHedgeRatioAdjustment: 0.1, maxLossFromAverageEntry: 15, assetAllocationHardCap: 30, botHealthCheckInterval: 15, apiPermissionValidation: 'Read/Trade', autoPauseOnNewsEvent: false, newsEventSeverity: 'High', volumeParticipationRate: 1, timeBasedDipInvalidation: 30, minAssetHoldingQuantity: 0, leverage: 1, marginMode: 'Isolated' } as DipAnalyserConfig;
+            case 'Signal Bot':
+                return { marketType: 'SPOT', signalSource: 'Telegram', messageParser: '^(BUY|SELL)\\s+(\\w+)\\s+@\\s+([\\d.]+)', providerTrustScore: 7, signalVerificationDelay: 5, maximumPositions: 5, correlationLimit: 75, autoStopOnProviderError: true, maxOrderDeviation: 2, maxPortfolioDrawdown: 20, auditLogVerbosity: 'Standard', assetWhitelist: 'BTC,ETH,SOL,BNB', timeOfDayTradingWindow: '00:00-23:59', maxDailyLoss: 1000, maxWeeklyLoss: 5000, orderTypePreference: 'Limit', slippageTolerance: 0.5, fillOrKillTimeout: 5000, dynamicPositionSizing: '% of Balance', dataFeedLatencyThreshold: 1000, maxAPIRequestRate: 60, emergencyKillSwitchKey: '', signalReentryDelay: 15, tpSlOverwrite: 'Allow', partialFillPolicy: 'Hold', marketDataTolerance: 2, orderTradeRatioLimit: 20, strategyVersionLock: 'v1.0.0', tradeIdentifierTag: 'SIGNAL_BOT_1', pnlReportingFrequency: 'Real-Time', vendorSignalLicenseKey: '', minExchangeLiquidity: 1000000, postTradeComplianceDelay: 500, circuitBreakerResponse: 'Pause New', requiredDataFields: ['Asset', 'Action', 'Price'], exposureNettingMode: 'Net', maxVolatilityFilter: 100, maxSlippagePerPosition: 1, strategyConfidenceScoreThreshold: 0.6, auditLogRetentionPeriod: 1825, correlationCheckLookbackWindow: '30 Days', externalRiskSystemHeartbeatTimeout: 60, orderRoutingDestinationOverride: '', signalParsingFailureLimit: 5, tradeExecutionWindowMaxLatency: 1000, maxAdverseExcursion: 10, outOfSampleFailureThreshold: 3, leverage: 1, marginMode: 'Isolated' } as SignalBotConfig;
+            default:
+                return {};
+        }
+    };
+    
     const handleSelectForCompare = (id: string) => {
         setComparingIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
     };
@@ -490,9 +681,10 @@ const StrategiesView: React.FC = () => {
         return {};
     };
 
-    const startCreation = (type: StrategyType, initialConf = {}) => {
+    const startCreation = (type: StrategyType, initialConf: any = {}) => {
         setSelectedStrategyType(type);
-        setCurrentConfig(initialConf);
+        const config = Object.keys(initialConf).length > 0 ? initialConf : getDefaultConfig(type);
+        setCurrentConfig(config);
         setView('config');
         setCurrentPair('BTC/USDT');
     };
@@ -541,8 +733,24 @@ const StrategiesView: React.FC = () => {
                 return <DcaBotConfigPanel config={currentConfig} onConfigChange={setCurrentConfig} onSave={handleSaveStrategy} onSaveTemplate={handleSaveTemplate} />;
             case 'Advanced Grid':
                 return <GridBotConfigPanel config={currentConfig} onConfigChange={setCurrentConfig} onSave={handleSaveStrategy} onSaveTemplate={handleSaveTemplate} />;
+            case 'Normal Grid':
+                return <NormalGridConfigPanel config={currentConfig} onConfigChange={setCurrentConfig} onSave={handleSaveStrategy} onSaveTemplate={handleSaveTemplate} />;
+            case 'Normal DCA':
+                return <NormalDCAConfigPanel config={currentConfig} onConfigChange={setCurrentConfig} onSave={handleSaveStrategy} onSaveTemplate={handleSaveTemplate} />;
             case 'Quantitative Strategy':
                 return <QuantitativeStrategyConfigPanel config={currentConfig} onConfigChange={setCurrentConfig} onSave={handleSaveStrategy} onSaveTemplate={handleSaveTemplate} />;
+            case 'Trend-Following Bot':
+                return <TrendFollowingConfigPanel config={currentConfig} onConfigChange={setCurrentConfig} onSave={handleSaveStrategy} onSaveTemplate={handleSaveTemplate} />;
+            case 'Mean Reversion Bot':
+                return <MeanReversionConfigPanel config={currentConfig} onConfigChange={setCurrentConfig} onSave={handleSaveStrategy} onSaveTemplate={handleSaveTemplate} />;
+            case 'Volatility Breakout Bot':
+                return <VolatilityBreakoutConfigPanel config={currentConfig} onConfigChange={setCurrentConfig} onSave={handleSaveStrategy} onSaveTemplate={handleSaveTemplate} />;
+            case 'TradingView Webhook Bot':
+                return <TradingViewWebhookConfigPanel config={currentConfig} onConfigChange={setCurrentConfig} onSave={handleSaveStrategy} onSaveTemplate={handleSaveTemplate} />;
+            case 'Dip Analyser Bot':
+                return <DipAnalyserConfigPanel config={currentConfig} onConfigChange={setCurrentConfig} onSave={handleSaveStrategy} onSaveTemplate={handleSaveTemplate} />;
+            case 'Signal Bot':
+                return <SignalBotConfigPanel config={currentConfig} onConfigChange={setCurrentConfig} onSave={handleSaveStrategy} onSaveTemplate={handleSaveTemplate} />;
             default:
                 return <Card><p>This strategy is not yet configurable.</p></Card>;
         }
@@ -565,22 +773,75 @@ const StrategiesView: React.FC = () => {
                  <button onClick={() => setView('list')} className="mb-4 text-sm font-semibold text-primary hover:underline flex items-center">
                     <Icon name="chevronLeft" className="h-4 w-4 mr-1" /> Back to Strategies
                 </button>
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                    <div className="lg:col-span-4 xl:col-span-3">
-                        {renderConfigPanel()}
-                    </div>
-                    <div className="lg:col-span-8 xl:col-span-9">
-                         <Card className="h-[80vh] p-0 overflow-hidden">
-                            <TradingChart 
-                                data={mockCandlestickData} 
-                                theme={theme}
-                                symbol={currentPair}
-                                exchange="BINANCE"
-                                timeframe={timeframe}
-                                {...chartVisuals}
-                            />
-                        </Card>
-                    </div>
+                
+                <div className="space-y-4 sm:space-y-6">
+                    {renderConfigPanel()}
+                    
+                    <Card className="h-[500px] sm:h-[600px] lg:h-[700px] p-0 overflow-hidden">
+                        <TradingViewWidget 
+                            symbol={currentPair.replace('/', '')}
+                            exchange="BINANCE"
+                        />
+                    </Card>
+                    
+                    <Card className="p-4 sm:p-6">
+                        <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-2 sm:mb-3">
+                            Professional Trading Charts
+                        </h3>
+                        <p className="text-sm sm:text-base text-gray-600 dark:text-dark-text-secondary mb-4 sm:mb-6">
+                            Powered by TradingView, the world's leading charting platform. Analyze markets with advanced technical indicators, drawing tools, and real-time data.
+                        </p>
+                        
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+                            <div>
+                                <h4 className="font-semibold text-gray-900 dark:text-white mb-2 sm:mb-3 flex items-center text-sm sm:text-base">
+                                    <span className="text-green-500 mr-2">✓</span> Features
+                                </h4>
+                                <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-gray-600 dark:text-dark-text-secondary">
+                                    <li className="flex items-start">
+                                        <span className="mr-2">•</span>
+                                        <span>Real-time price data</span>
+                                    </li>
+                                    <li className="flex items-start">
+                                        <span className="mr-2">•</span>
+                                        <span>50+ technical indicators</span>
+                                    </li>
+                                    <li className="flex items-start">
+                                        <span className="mr-2">•</span>
+                                        <span>Multiple timeframes</span>
+                                    </li>
+                                    <li className="flex items-start">
+                                        <span className="mr-2">•</span>
+                                        <span>Drawing tools & patterns</span>
+                                    </li>
+                                </ul>
+                            </div>
+                            
+                            <div>
+                                <h4 className="font-semibold text-gray-900 dark:text-white mb-2 sm:mb-3 flex items-center text-sm sm:text-base">
+                                    <span className="text-blue-500 mr-2">📈</span> Indicators Included
+                                </h4>
+                                <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-gray-600 dark:text-dark-text-secondary">
+                                    <li className="flex items-start">
+                                        <span className="mr-2">•</span>
+                                        <span>RSI (Relative Strength Index)</span>
+                                    </li>
+                                    <li className="flex items-start">
+                                        <span className="mr-2">•</span>
+                                        <span>Moving Averages (MA)</span>
+                                    </li>
+                                    <li className="flex items-start">
+                                        <span className="mr-2">•</span>
+                                        <span>MACD</span>
+                                    </li>
+                                    <li className="flex items-start">
+                                        <span className="mr-2">•</span>
+                                        <span>Bollinger Bands</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </Card>
                 </div>
             </div>
         )

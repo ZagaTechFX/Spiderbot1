@@ -1,5 +1,8 @@
-
 import React, { useState, createContext, useMemo, useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import UserLoginPage from './pages/UserLoginPage';
+import AdminLoginPage from './pages/AdminLoginPage';
 import UserDashboard from './pages/user-dashboard/UserDashboard';
 import AdminDashboard from './pages/admin-dashboard/AdminDashboard';
 import { Theme } from './types';
@@ -9,20 +12,22 @@ export const ThemeContext = createContext<{ theme: Theme; toggleTheme: () => voi
   toggleTheme: () => {},
 });
 
-const SwitchViewButton: React.FC<{ onViewChange: () => void; currentView: 'user' | 'admin' }> = ({ onViewChange, currentView }) => (
-  <div className="fixed bottom-4 right-4 z-50">
-    <button
-      onClick={onViewChange}
-      className="bg-primary hover:bg-primary-hover text-white font-bold py-2 px-4 rounded-full shadow-lg transition-transform transform hover:scale-105"
-    >
-      Switch to {currentView === 'user' ? 'Admin' : 'User'} View
-    </button>
-  </div>
-);
+const ProtectedRoute: React.FC<{ children: React.ReactNode; requireAdmin?: boolean }> = ({ children, requireAdmin = false }) => {
+  const { user, isAuthenticated } = useAuth();
+  
+  if (!isAuthenticated || !user) {
+    return <Navigate to={requireAdmin ? "/admin" : "/login"} replace />;
+  }
+  
+  if (requireAdmin && user.role !== 'admin') {
+    return <Navigate to="/admin" replace />;
+  }
+  
+  return <>{children}</>;
+};
 
-const App: React.FC = () => {
+const AppContent: React.FC = () => {
   const [theme, setTheme] = useState<Theme>('dark');
-  const [view, setView] = useState<'user' | 'admin'>('user');
 
   useEffect(() => {
     const root = window.document.documentElement;
@@ -40,14 +45,47 @@ const App: React.FC = () => {
   };
 
   const themeValue = useMemo(() => ({ theme, toggleTheme }), [theme]);
-  
+
   return (
     <ThemeContext.Provider value={themeValue}>
       <div className="min-h-screen font-sans text-gray-900 dark:text-dark-text bg-gray-100 dark:bg-dark-bg">
-        <SwitchViewButton onViewChange={() => setView(v => v === 'user' ? 'admin' : 'user')} currentView={view} />
-        {view === 'user' ? <UserDashboard /> : <AdminDashboard />}
+        <Routes>
+          <Route path="/login" element={<UserLoginPage />} />
+          <Route path="/admin" element={<AdminLoginPage />} />
+          
+          <Route 
+            path="/dashboard/*" 
+            element={
+              <ProtectedRoute>
+                <UserDashboard />
+              </ProtectedRoute>
+            } 
+          />
+          
+          <Route 
+            path="/admin/dashboard/*" 
+            element={
+              <ProtectedRoute requireAdmin>
+                <AdminDashboard />
+              </ProtectedRoute>
+            } 
+          />
+          
+          <Route path="/" element={<Navigate to="/login" replace />} />
+          <Route path="*" element={<Navigate to="/login" replace />} />
+        </Routes>
       </div>
     </ThemeContext.Provider>
+  );
+};
+
+const App: React.FC = () => {
+  return (
+    <AuthProvider>
+      <BrowserRouter>
+        <AppContent />
+      </BrowserRouter>
+    </AuthProvider>
   );
 };
 

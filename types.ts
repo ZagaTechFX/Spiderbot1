@@ -1,15 +1,25 @@
-import { UTCTimestamp } from 'lightweight-charts';
+export type UTCTimestamp = number;
 
 export type Theme = 'light' | 'dark';
+export type UserRole = 'user' | 'admin';
 
 export interface User {
   id: string;
+  username: string;
+  role: UserRole;
   name: string;
   email: string;
   avatarUrl: string;
   kycStatus: 'Verified' | 'Pending' | 'Rejected' | 'Not Submitted';
   subscriptionPlan: string;
   lastLogin: string;
+}
+
+export interface AuthContextType {
+  user: User | null;
+  login: (username: string, password: string) => Promise<boolean>;
+  logout: () => void;
+  isAuthenticated: boolean;
 }
 
 export interface KpiCardData {
@@ -285,11 +295,12 @@ export interface GridConfig {
 
 export interface AlgoStrategyConfig {
     marketType: 'SPOT' | 'FUTURES';
+    
     // Core Logic
     model: 'Trend-Following' | 'Mean Reversion' | 'Volatility Breakout' | 'Pairs/Stat-Arb';
     primaryEntrySignal: string;
     confirmationFilter: string;
-    regimeFilter: string;
+    regimeFilter: 'ADX' | 'Volatility' | 'None';
 
     // Universal Risk
     atrMultiplierForStops: number;
@@ -307,17 +318,25 @@ export interface AlgoStrategyConfig {
     // Execution & Order Management
     maxPositionSize: number;
     maxDailyLoss: number;
+    maxWeeklyLoss: number;
     slippageTolerance: number;
     orderType: 'Market' | 'Limit' | 'IOC' | 'FOK';
     partialFillHandling: 'Wait' | 'Cancel Remainder';
     
     // Advanced Risk & System Health
+    circuitBreakerEnabled: boolean;
     maxOpenPositions: number;
     useTimeOfDayFilter: boolean;
     tradingHoursStart: string;
     tradingHoursEnd: string;
     tradeVelocityLimit: number;
+    commissionFeeModel: 'Fixed' | 'Maker/Taker Tiers';
     commissionFee: number;
+    
+    // Compliance and Reporting
+    allocationBucket: string;
+    auditLogVerbosity: 'Low' | 'Medium' | 'High';
+    postTradeReportingFlag: boolean;
     
     // Portfolio-Level Risk
     maxPortfolioDrawdown: number;
@@ -326,18 +345,251 @@ export interface AlgoStrategyConfig {
     liquidityDepthThreshold: number;
     interStrategyCorrelationFilter: number;
     
-    // Model Risk & Adaptivity
+    // Operational & System Health
+    globalKillSwitch: boolean;
+    dataFeedLatencyThreshold: number;
+    connectivityFailureRetries: number;
+    connectivityRetryDelay: number;
+    maxOrderCancelRate: number;
+    
+    // Post-Trade & Compliance
+    slippageReportDeviation: number;
+    tradeAuditTrailLevel: 'Minimal' | 'Decision-Level' | 'Full Tick';
+    backtestLiveSkewThreshold: number;
+    
+    // Strategy Adaptivity and Calibration
     useAdaptiveParameters: boolean;
     adaptiveParameterRange: number;
     marketRegimeSwitchThreshold: number;
     performanceDegradationAction: 'Alert' | 'Pause' | 'Re-calibrate';
+    walkForwardAnalysisPeriod: number;
+    
+    // Portfolio Construction & Aggregation
+    targetPortfolioBeta: number;
+    assetClassExposureCap: number;
+    riskBasedCapitalAllocation: 'Equal-Weight' | 'Risk-Parity' | 'Kelly';
+    dynamicRebalanceThreshold: number;
+    rebalanceTimeInterval: string;
+    
+    // System Integrity and Emergency
+    gracefulShutdownMode: boolean;
+    hardwareLatencyAlert: number;
+    
+    // Model Risk and Decay Management
+    modelValidationFrequency: 'Daily' | 'Weekly' | 'Monthly';
+    outOfSamplePerformanceThreshold: number;
+    strategyDecommissioningLogic: number;
+    parameterStabilityMetric: number;
+    tradeRationaleLoggingDetail: 'Minimal' | 'Decision Tree' | 'Full Feature Set';
     
     // Futures/Margin
     leverage: number;
     marginMode: 'Isolated' | 'Cross';
 }
 
-export type StrategyType = 'Advanced DCA' | 'Advanced Grid' | 'Signal Bot' | 'Quantitative Strategy';
+export interface NormalGridConfig {
+    marketType: 'SPOT' | 'FUTURES';
+    lowerPrice: number;
+    upperPrice: number;
+    gridCount: number;
+    investmentAmount: number;
+    gridSpacingType: 'Arithmetic' | 'Geometric';
+    stopLossPrice: number;
+    takeProfitPrice: number;
+    leverage: number;
+    marginMode: 'Isolated' | 'Cross';
+}
+
+export interface NormalDCAConfig {
+    marketType: 'SPOT' | 'FUTURES';
+    initialBuy: number;
+    buyInCallback: number;
+    takeProfitPercentage: number;
+    safetyOrderCount: number;
+    safetyOrderStepPercentage: number;
+    safetyOrderVolumeMultiplier: number;
+    stopLossPercentage: number;
+    leverage: number;
+    marginMode: 'Isolated' | 'Cross';
+}
+
+export interface TrendFollowingConfig {
+    marketType: 'SPOT' | 'FUTURES';
+    fastEMAPeriod: number;
+    slowEMAPeriod: number;
+    atrPeriod: number;
+    atrMultiplier: number;
+    positionSize: number;
+    stopLossATRMultiplier: number;
+    takeProfitATRMultiplier: number;
+    trailingStopEnabled: boolean;
+    leverage: number;
+    marginMode: 'Isolated' | 'Cross';
+}
+
+export interface MeanReversionConfig {
+    marketType: 'SPOT' | 'FUTURES';
+    zScorePeriod: number;
+    zScoreEntryThreshold: number;
+    zScoreExitThreshold: number;
+    rsiPeriod: number;
+    rsiOversold: number;
+    rsiOverbought: number;
+    positionSize: number;
+    stopLossPercentage: number;
+    takeProfitPercentage: number;
+    leverage: number;
+    marginMode: 'Isolated' | 'Cross';
+}
+
+export interface VolatilityBreakoutConfig {
+    marketType: 'SPOT' | 'FUTURES';
+    breakoutIndicator: 'Donchian' | 'Keltner';
+    lookbackPeriod: number;
+    keltnerATRMultiplier: number;
+    positionSize: number;
+    stopLossPercentage: number;
+    takeProfitPercentage: number;
+    timeOfDayFilterEnabled: boolean;
+    tradingHoursStart: string;
+    tradingHoursEnd: string;
+    leverage: number;
+    marginMode: 'Isolated' | 'Cross';
+}
+
+export interface TradingViewWebhookConfig {
+    marketType: 'SPOT' | 'FUTURES';
+    webhookURL: string;
+    alertParser: string;
+    signalSourceTrustScore: number;
+    maximumSlippage: number;
+    orderTimeout: number;
+    positionSizeOverride: 'Use Signal' | 'Fixed %';
+    fixedPositionSize: number;
+    dailyLossLimit: number;
+    maxExchangeAPIRateUsage: number;
+    orderTypeDefault: 'Market' | 'Limit' | 'Post Only Limit';
+    maxOpenPositions: number;
+    minimumPositionSize: number;
+    takeProfitPercentage: number;
+    stopLossPercentage: number;
+    globalCapitalAllocation: number;
+    maxPositionLeverage: number;
+    dailyTradeCountLimit: number;
+    ignoreTickersList: string;
+    confirmationWebhookURL: string;
+    logLevel: 'Info' | 'Debug' | 'Error';
+    timeZoneSetting: string;
+    partialFillHandling: 'Cancel Remainder' | 'Wait for Fill';
+    cooldownPeriod: number;
+    trailingStopActivation: number;
+    maxDrawdown: number;
+    exchangeTimeOffset: number;
+    executionEnvironment: 'Live Trading' | 'Paper Trading';
+    whitelistedIPAddresses: string;
+    maxTradeFeePercentage: number;
+    minimumProfitTarget: number;
+    strategyTagID: string;
+    accountMode: 'Single' | 'Master/Sub-Account';
+    webhookRetryMechanism: 'Exponential Backoff' | 'Fixed Delay';
+    leverage: number;
+    marginMode: 'Isolated' | 'Cross';
+}
+
+export interface DipAnalyserConfig {
+    marketType: 'SPOT' | 'FUTURES';
+    dipScoreComponents: {
+        rsiDivergence: boolean;
+        volumeSpike: boolean;
+        priceLevelTest: boolean;
+    };
+    scoreThreshold: number;
+    minimumDipDepth: number;
+    timeframeForAnalysis: '1h' | '4h' | '1D';
+    buyAggression: 'Conservative' | 'Moderate' | 'Aggressive';
+    quickProfitTarget: number;
+    progressiveStop: boolean;
+    progressiveStopPercentage: number;
+    maximumConcurrentDips: number;
+    forcedAccumulationMode: boolean;
+    recoveryConfirmationFilter: number;
+    liquiditySweepRequirement: boolean;
+    fvgRetracementPercentage: number;
+    orderBlockProximityFilter: number;
+    maxOrderBookSkew: number;
+    executionSliceSize: number;
+    twapHorizon: number;
+    maxCumulativeSlippage: number;
+    dcaTrancheSizeMultiplier: number;
+    dcaProfitExitThreshold: boolean;
+    dcaProfitExitPercentage: number;
+    portfolioHedgeRatioAdjustment: number;
+    maxLossFromAverageEntry: number;
+    assetAllocationHardCap: number;
+    botHealthCheckInterval: number;
+    apiPermissionValidation: 'Read-Only' | 'Read/Trade' | 'Full';
+    autoPauseOnNewsEvent: boolean;
+    newsEventSeverity: 'Low' | 'Medium' | 'High';
+    volumeParticipationRate: number;
+    timeBasedDipInvalidation: number;
+    minAssetHoldingQuantity: number;
+    leverage: number;
+    marginMode: 'Isolated' | 'Cross';
+}
+
+export interface SignalBotConfig {
+    marketType: 'SPOT' | 'FUTURES';
+    signalSource: 'Telegram' | 'Discord' | 'API' | 'Custom';
+    messageParser: string;
+    providerTrustScore: number;
+    signalVerificationDelay: number;
+    maximumPositions: number;
+    correlationLimit: number;
+    autoStopOnProviderError: boolean;
+    maxOrderDeviation: number;
+    maxPortfolioDrawdown: number;
+    auditLogVerbosity: 'Minimal' | 'Standard' | 'Detailed' | 'Full';
+    assetWhitelist: string;
+    timeOfDayTradingWindow: string;
+    maxDailyLoss: number;
+    maxWeeklyLoss: number;
+    orderTypePreference: 'Limit' | 'Market' | 'Post-Only Limit' | 'IOC' | 'FOK';
+    slippageTolerance: number;
+    fillOrKillTimeout: number;
+    dynamicPositionSizing: 'Fixed Amt' | '% of Balance' | 'Kelly Criterion' | 'VaR';
+    dataFeedLatencyThreshold: number;
+    maxAPIRequestRate: number;
+    emergencyKillSwitchKey: string;
+    signalReentryDelay: number;
+    tpSlOverwrite: 'Allow' | 'Reject' | 'Only If Worse';
+    partialFillPolicy: 'Hold' | 'Cancel Remaining' | 'Re-Price Limit';
+    marketDataTolerance: number;
+    orderTradeRatioLimit: number;
+    strategyVersionLock: string;
+    tradeIdentifierTag: string;
+    pnlReportingFrequency: 'Real-Time' | '1min' | '5min' | 'EOD';
+    vendorSignalLicenseKey: string;
+    minExchangeLiquidity: number;
+    postTradeComplianceDelay: number;
+    circuitBreakerResponse: 'Cancel All' | 'Pause New' | 'Reduce-Only';
+    requiredDataFields: string[];
+    exposureNettingMode: 'Gross' | 'Net' | 'Delta-Adjusted';
+    maxVolatilityFilter: number;
+    maxSlippagePerPosition: number;
+    strategyConfidenceScoreThreshold: number;
+    auditLogRetentionPeriod: number;
+    correlationCheckLookbackWindow: string;
+    externalRiskSystemHeartbeatTimeout: number;
+    orderRoutingDestinationOverride: string;
+    signalParsingFailureLimit: number;
+    tradeExecutionWindowMaxLatency: number;
+    maxAdverseExcursion: number;
+    outOfSampleFailureThreshold: number;
+    leverage: number;
+    marginMode: 'Isolated' | 'Cross';
+}
+
+export type StrategyType = 'Advanced DCA' | 'Advanced Grid' | 'Signal Bot' | 'Quantitative Strategy' | 'Normal Grid' | 'Normal DCA' | 'TradingView Webhook Bot' | 'Dip Analyser Bot' | 'Trend-Following Bot' | 'Mean Reversion Bot' | 'Volatility Breakout Bot';
 
 export interface UserStrategy {
     id: string;
