@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { ThemeContext } from '../App';
 import Icon from './Icon';
@@ -9,6 +10,7 @@ interface UserHeaderProps {
 }
 
 const UserHeader: React.FC<UserHeaderProps> = ({ onMenuClick }) => {
+  const navigate = useNavigate();
   const { user, logout } = useAuth();
   const { theme, toggleTheme } = React.useContext(ThemeContext);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -134,7 +136,10 @@ const UserHeader: React.FC<UserHeaderProps> = ({ onMenuClick }) => {
 
                 <div className="border-t border-gray-200 dark:border-dark-border pt-2">
                   <button
-                    onClick={logout}
+                    onClick={() => {
+                      logout();
+                      navigate('/login', { replace: true });
+                    }}
                     className="w-full px-4 py-3 text-left text-sm text-danger hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center space-x-3 rounded-b-lg"
                   >
                     <Icon name="logout" className="h-5 w-5" />

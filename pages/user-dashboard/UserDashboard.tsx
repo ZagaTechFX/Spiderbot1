@@ -11,6 +11,12 @@ import SocialTradingView from './SocialTradingView';
 import AIStrategyOptimizerView from './AIStrategyOptimizerView';
 import SettingsView from './SettingsView';
 import ArbitrageView from './ArbitrageView';
+import BacktestingView from './BacktestingView';
+import RiskAssessmentView from './RiskAssessmentView';
+import AdvancedView from './AdvancedView';
+import MyWalletView from './MyWalletView';
+import SupportView from './SupportView';
+import CommunityView from './CommunityView';
 import UserHeader from '../../components/UserHeader';
 
 const UserDashboard: React.FC = () => {
@@ -35,18 +41,30 @@ const UserDashboard: React.FC = () => {
         return <ArbitrageView />;
       case 'Strategies':
         return <StrategiesView />;
+      case 'Backtesting':
+        return <BacktestingView />;
+      case 'Risk Assessment':
+        return <RiskAssessmentView />;
       case 'Social Trading Hub':
         return <SocialTradingView />;
+      case 'Advanced':
+        return <AdvancedView />;
       case 'Analytics':
         return <AnalyticsView />;
-      case 'Investment Goals':
-        return <InvestmentGoalsView />;
       case 'AI Strategy Optimizer':
         return <AIStrategyOptimizerView />;
+      case 'Investment Goals':
+        return <InvestmentGoalsView />;
+      case 'My Wallet':
+        return <MyWalletView />;
+      case 'Support/Help Desk':
+        return <SupportView />;
+      case 'Join Our Community':
+        return <CommunityView />;
       case 'Account Settings':
         return <SettingsView />;
       default:
-        return <div className="p-4 sm:p-6 md:p-8"><h1 className="text-xl sm:text-2xl font-bold">{activeView}</h1><p>Content coming soon...</p></div>;
+        return <div className="p-4 sm:p-6 md:p-8"><h1 className="text-xl sm:text-2xl font-bold dark:text-white">{activeView}</h1><p className="dark:text-gray-400">Content coming soon...</p></div>;
     }
   };
 

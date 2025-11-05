@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { ThemeContext } from '../App';
 import Icon from './Icon';
@@ -8,6 +9,7 @@ interface AdminHeaderProps {
 }
 
 const AdminHeader: React.FC<AdminHeaderProps> = ({ onMenuClick }) => {
+  const navigate = useNavigate();
   const { user, logout } = useAuth();
   const { theme, toggleTheme } = React.useContext(ThemeContext);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -128,7 +130,10 @@ const AdminHeader: React.FC<AdminHeaderProps> = ({ onMenuClick }) => {
 
                 <div className="border-t border-gray-200 dark:border-dark-border pt-2">
                   <button
-                    onClick={logout}
+                    onClick={() => {
+                      logout();
+                      navigate('/admin', { replace: true });
+                    }}
                     className="w-full px-4 py-2 text-left text-sm text-danger hover:bg-gray-100 dark:hover:bg-dark-bg-secondary flex items-center space-x-3"
                   >
                     <Icon name="logout" className="h-4 w-4" />

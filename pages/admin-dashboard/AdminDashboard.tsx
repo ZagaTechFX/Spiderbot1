@@ -9,6 +9,9 @@ import AuditTrailView from './AuditTrailView';
 import AdminInboxView from './AdminInboxView';
 import BotHealthView from './BotHealthView';
 import FeatureFlagsView from './FeatureFlagsView';
+import PerformanceMetricsView from './PerformanceMetricsView';
+import SystemStatusView from './SystemStatusView';
+import SupportTicketsView from './SupportTicketsView';
 import AdminHeader from '../../components/AdminHeader';
 
 const AdminDashboard: React.FC = () => {
@@ -25,6 +28,8 @@ const AdminDashboard: React.FC = () => {
     switch (activeView) {
       case 'Dashboard':
         return <AdminHomeView />;
+      case 'Performance Metrics':
+        return <PerformanceMetricsView />;
       case 'User List / CRM':
         return <UserManagementView />;
       case 'KYC Management':
@@ -37,10 +42,14 @@ const AdminDashboard: React.FC = () => {
         return <AdminInboxView />;
       case 'Bot Health / Heartbeats':
         return <BotHealthView />;
+      case 'System Status':
+        return <SystemStatusView />;
       case 'Feature Flags':
         return <FeatureFlagsView />;
+      case 'Support Tickets':
+        return <SupportTicketsView />;
       default:
-        return <div className="p-4 sm:p-6 md:p-8"><h1 className="text-xl sm:text-2xl font-bold">{activeView}</h1><p>Content coming soon...</p></div>;
+        return <div className="p-4 sm:p-6 md:p-8"><h1 className="text-xl sm:text-2xl font-bold dark:text-white">{activeView}</h1><p className="dark:text-gray-400">Content coming soon...</p></div>;
     }
   };
 
