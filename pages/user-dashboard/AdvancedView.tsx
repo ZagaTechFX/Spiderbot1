@@ -70,7 +70,10 @@ const AdvancedView: React.FC = () => {
             </div>
             <h3 className="text-base font-bold dark:text-white mb-2">{feature.title}</h3>
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">{feature.description}</p>
-            <button className="w-full text-sm px-4 py-2 bg-primary hover:bg-primary-hover text-white rounded-lg transition-colors">
+            <button 
+              onClick={() => alert(`Configure ${feature.title}\n\nThis would open the configuration panel for this advanced feature.`)}
+              className="w-full text-sm px-4 py-2 bg-primary hover:bg-primary-hover text-white rounded-lg transition-colors"
+            >
               Configure
             </button>
           </Card>

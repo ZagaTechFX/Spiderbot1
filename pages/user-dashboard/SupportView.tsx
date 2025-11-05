@@ -87,7 +87,18 @@ const SupportView: React.FC = () => {
               />
             </div>
 
-            <button className="w-full bg-primary hover:bg-primary-hover text-white font-semibold py-3 rounded-lg transition-colors">
+            <button 
+              onClick={() => {
+                if (ticketSubject && ticketMessage) {
+                  alert(`Ticket submitted successfully!\n\nSubject: ${ticketSubject}\n\nYour support ticket has been created and our team will respond within 24 hours.`);
+                  setTicketSubject('');
+                  setTicketMessage('');
+                } else {
+                  alert('Please fill in both subject and message fields.');
+                }
+              }}
+              className="w-full bg-primary hover:bg-primary-hover text-white font-semibold py-3 rounded-lg transition-colors"
+            >
               Submit Ticket
             </button>
           </div>

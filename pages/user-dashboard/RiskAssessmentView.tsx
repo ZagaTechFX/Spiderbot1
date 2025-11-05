@@ -93,7 +93,10 @@ const RiskAssessmentView: React.FC = () => {
                     {position.profit}
                   </td>
                   <td className="py-3 px-2">
-                    <button className="text-xs px-3 py-1 bg-primary hover:bg-primary-hover text-white rounded transition-colors">
+                    <button 
+                      onClick={() => alert(`Adjust position: ${position.pair}\n\nThis would open position adjustment controls for risk management.`)}
+                      className="text-xs px-3 py-1 bg-primary hover:bg-primary-hover text-white rounded transition-colors"
+                    >
                       Adjust
                     </button>
                   </td>

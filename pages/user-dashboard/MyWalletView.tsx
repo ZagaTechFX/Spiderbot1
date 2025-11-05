@@ -121,10 +121,16 @@ const MyWalletView: React.FC = () => {
                     </td>
                     <td className="py-3 px-2">
                       <div className="flex space-x-2">
-                        <button className="text-xs px-2 py-1 bg-success hover:bg-green-700 text-white rounded transition-colors">
+                        <button 
+                          onClick={() => alert(`Buy ${balance.asset}: This would open a buy order form`)}
+                          className="text-xs px-2 py-1 bg-success hover:bg-green-700 text-white rounded transition-colors"
+                        >
                           Buy
                         </button>
-                        <button className="text-xs px-2 py-1 bg-danger hover:bg-red-700 text-white rounded transition-colors">
+                        <button 
+                          onClick={() => alert(`Sell ${balance.asset}: This would open a sell order form`)}
+                          className="text-xs px-2 py-1 bg-danger hover:bg-red-700 text-white rounded transition-colors"
+                        >
                           Sell
                         </button>
                       </div>

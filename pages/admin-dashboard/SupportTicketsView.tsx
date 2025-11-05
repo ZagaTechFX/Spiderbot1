@@ -28,7 +28,10 @@ const SupportTicketsView: React.FC = () => {
           <h1 className="text-xl sm:text-2xl md:text-3xl font-bold dark:text-white">Support Tickets</h1>
           <p className="text-xs sm:text-sm text-gray-500 dark:text-dark-text-secondary mt-1">Manage user support requests</p>
         </div>
-        <button className="px-4 py-2 bg-primary hover:bg-primary-hover text-white rounded-lg transition-colors text-sm">
+        <button 
+          onClick={() => alert('Create New Ticket\n\nThis would open a form to manually create a support ticket on behalf of a user.')}
+          className="px-4 py-2 bg-primary hover:bg-primary-hover text-white rounded-lg transition-colors text-sm"
+        >
           New Ticket
         </button>
       </div>
@@ -101,7 +104,10 @@ const SupportTicketsView: React.FC = () => {
                   <td className="py-3 px-2 text-sm dark:text-white">{ticket.assignee}</td>
                   <td className="py-3 px-2 text-sm text-gray-600 dark:text-gray-400">{ticket.created}</td>
                   <td className="py-3 px-2">
-                    <button className="text-xs px-3 py-1 bg-primary hover:bg-primary-hover text-white rounded transition-colors">
+                    <button 
+                      onClick={() => alert(`Viewing ticket ${ticket.id}\n\nSubject: ${ticket.subject}\nUser: ${ticket.user}\nStatus: ${ticket.status}\n\nThis would open the full ticket details and response interface.`)}
+                      className="text-xs px-3 py-1 bg-primary hover:bg-primary-hover text-white rounded transition-colors"
+                    >
                       View
                     </button>
                   </td>

@@ -71,18 +71,20 @@ const BacktestingView: React.FC = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Trading Pair</label>
-              <input 
-                type="text"
-                defaultValue="BTC/USDT"
-                className="w-full px-3 py-2 bg-white dark:bg-dark-bg-secondary border border-gray-300 dark:border-dark-border rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary"
-              />
+              <select className="w-full px-3 py-2 bg-white dark:bg-dark-bg-secondary border border-gray-300 dark:border-dark-border rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary">
+                <option>BTC/USDT</option>
+                <option>ETH/USDT</option>
+                <option>SOL/USDT</option>
+                <option>BNB/USDT</option>
+              </select>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Initial Capital</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Initial Capital ($)</label>
               <input 
                 type="number"
                 defaultValue={10000}
+                step={100}
                 className="w-full px-3 py-2 bg-white dark:bg-dark-bg-secondary border border-gray-300 dark:border-dark-border rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary"
               />
             </div>
