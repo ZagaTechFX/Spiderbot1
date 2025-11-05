@@ -1,219 +1,43 @@
 # SpiderBot - Institutional Crypto Trading Platform
 
 ## Overview
-SpiderBot is a comprehensive crypto trading platform built with React, TypeScript, and Vite. It provides both user and admin dashboards for institutional crypto trading management.
+SpiderBot is a comprehensive crypto trading platform designed for institutional crypto trading management, providing both user and admin dashboards. Its purpose is to offer advanced tools for trading, analytics, strategy implementation, and administrative oversight in the cryptocurrency market. The platform aims to provide a robust, scalable, and secure environment for institutional-grade trading operations, leveraging AI for optimization and featuring an extensive strategy marketplace.
 
-## Project Structure
-- **Frontend Framework**: React 19.2.0 with TypeScript
-- **Build Tool**: Vite 6.2.0
-- **Styling**: TailwindCSS (via CDN)
-- **Charts**: Recharts and Lightweight Charts
-- **Port**: 5000 (configured for Replit environment)
+## User Preferences
+I prefer iterative development, with clear communication at each stage. Ask before making major architectural changes or introducing new significant dependencies. I prefer detailed explanations for complex technical decisions. Ensure the code is well-commented and follows best practices for maintainability and readability.
 
-## Key Features
-- **Authentication System**: Role-based access control with separate user and admin interfaces
-- User Dashboard with trading views, analytics, strategies, and AI optimization
-- Admin Dashboard with bot management, user management, KYC, audit trails, and feature flags
-- Dark/Light theme support
-- Real-time trading charts
-- Arbitrage monitoring
-- Social trading features
+## System Architecture
+The application is a frontend-only platform built with React 19.2.0 and TypeScript, using Vite 6.2.0 as the build tool. Styling is managed with TailwindCSS (via CDN).
 
-## Authentication
-- Mock authentication system with demo credentials
-- Two user roles: 'user' and 'admin'
-- Demo credentials:
-  - Regular User: username `demo`, password `demo`
-  - Admin User: username `admin`, password `admin`
-- Authentication state persisted in localStorage
-- Role-based routing: users see UserDashboard, admins see AdminDashboard
+**UI/UX Decisions:**
+- **Theme Support:** Dark/Light theme toggling for user preference.
+- **Responsive Design:** Mobile-first approach implemented across the entire application, utilizing Tailwind CSS breakpoints (sm, md, lg, xl) for adaptive layouts, navigation, and component sizing. This includes responsive sidebars, headers, card components, and strategy configuration panels.
+- **Navigation:** Hamburger menu for mobile navigation with off-canvas slide-in sidebars.
+- **Professional Interfaces:** Integration of professional-grade components like TradingView widgets for charting.
 
-## Environment Variables
-- `GEMINI_API_KEY`: Required for the application to function properly. This is used for AI-powered features in the trading platform.
+**Technical Implementations:**
+- **Authentication:** A mock, role-based authentication system is in place with 'user' and 'admin' roles, persisting state in localStorage.
+- **Charting:** Utilizes Recharts and Lightweight Charts, alongside a professional TradingView widget for real-time price data, 50+ technical indicators (RSI, MA, MACD, Bollinger Bands pre-loaded), advanced tools, and multiple timeframes.
+- **Strategy Marketplace:** Features 11 diverse trading strategies, including Advanced DCA, Advanced Grid, Normal Grid, Normal DCA, Quantitative Strategy (institutional algorithmic), Signal Bot, TradingView Webhook Bot, Dip Analyser Bot, Trend-Following Bot, Mean Reversion Bot, and Volatility Breakout Bot. Each strategy includes comprehensive, often institutional-grade, configuration panels with extensive settings for logic, risk management, execution, compliance, and operational controls.
+- **AI Optimization:** Integrated AI-powered features for trading, specifically mentioned with the `GEMINI_API_KEY`.
+- **Development Environment:** Vite development server runs on port 5000, configured with HMR and `allowedHosts: true` for Replit compatibility.
 
-## Architecture
-This is a frontend-only application with no backend component. It uses:
-- Vite development server running on port 5000
-- Host configured as 0.0.0.0 for Replit proxy compatibility
-- HMR (Hot Module Replacement) configured for port 5000
+**Feature Specifications:**
+- **User Dashboard:** Provides trading views, analytics, strategy management, and AI optimization tools.
+- **Admin Dashboard:** Offers bot management, user management, KYC, audit trails, and feature flag controls.
+- **Arbitrage Monitoring & Social Trading:** Planned or existing capabilities for advanced trading.
 
-## Recent Changes (November 4, 2025)
-### Initial Setup
-- Imported from GitHub and configured for Replit environment
-- Fixed vite.config.ts to use ES modules (__dirname issue resolved)
-- Changed server port from 3000 to 5000 for Replit compatibility
-- Added `allowedHosts: true` to server config for Replit proxy compatibility
-- Configured HMR client port for proper hot reloading
-- Set up workflow for development server
-- Configured deployment with autoscale target
-- GEMINI_API_KEY environment variable configured for AI features
+**System Design Choices:**
+- **Frontend Focus:** The project is designed as a standalone frontend application, implying interaction with external APIs for data and services rather than an integrated backend.
+- **Modularity:** Components are organized into reusable UI elements, context providers for state management (e.g., AuthContext), and dedicated pages for different functionalities (login, user dashboard, admin dashboard).
+- **TypeScript:** Strong typing is enforced across the codebase for improved maintainability and error detection.
 
-### Authentication Implementation
-- Created `contexts/AuthContext.tsx` for authentication state management
-- Built `pages/LoginPage.tsx` with credential display and form validation
-- Implemented `components/UserHeader.tsx` with profile dropdown and theme toggle
-- Implemented `components/AdminHeader.tsx` with admin-specific options and alerts
-- Updated `App.tsx` to enforce authentication before dashboard access
-- Removed public "Switch to Admin View" button (security improvement)
-- Added `UserRole` and `AuthContextType` to type definitions
-
-### TradingView Widget Integration (November 5, 2025)
-**Integrated professional TradingView widget for world-class charting:**
-
-**TradingView Features:**
-- **Real-Time Price Data**: Live market data from Binance exchange
-- **50+ Technical Indicators**: Access to all TradingView indicators
-- **Advanced Tools**: Drawing tools, pattern recognition, alerts
-- **Multiple Timeframes**: 1m to 1M with customizable intervals
-- **Professional UI**: Industry-standard interface used by millions of traders
-
-**Pre-Loaded Indicators:**
-- **RSI (Relative Strength Index)**: 14-period momentum oscillator
-- **Moving Averages (MA)**: Simple and exponential moving averages
-- **MACD**: Moving Average Convergence Divergence indicator
-- **Bollinger Bands**: Volatility and price envelope indicator
-
-**Marketing Features Section:**
-- Added informational card above chart explaining TradingView integration
-- Features list: Real-time data, 50+ indicators, multiple timeframes, drawing tools
-- Indicators list: RSI, MA, MACD, Bollinger Bands
-- Fully responsive design with mobile-optimized layout (sm:, lg: breakpoints)
-
-**Technical Implementation:**
-- Installed `react-ts-tradingview-widgets` package for full TypeScript support
-- Created `components/TradingViewWidget.tsx` wrapper component
-- Integrated AdvancedRealTimeChart with dark/light theme support
-- Updated `pages/user-dashboard/StrategiesView.tsx` with marketing section and widget
-- Chart height: 500px (mobile) → 600px (sm) → 700px (lg)
-- Dynamic symbol/exchange props support all trading pairs
-
-### Institutional Algorithmic Strategy
-- Expanded `AlgoStrategyConfig` interface with comprehensive institutional-grade settings
-- Created advanced configuration panel with 6 categories:
-  - **Core Logic**: Model selection (Trend-Following, Mean Reversion, Volatility Breakout, Pairs/Stat-Arb)
-  - **Risk Management**: Portfolio-level risk controls, VaR, leverage limits, correlation filters, portfolio construction
-  - **Execution**: Order management, slippage controls, circuit breakers, time filters, commission models
-  - **Compliance**: Audit logging, allocation buckets, post-trade reporting, slippage monitoring
-  - **Operational**: Kill switch, data feed monitoring, connectivity handling, system integrity
-  - **Adaptive & Model Risk**: Parameter adaptation, performance monitoring, model validation, decay detection
-- Added 40+ professional settings including:
-  - Walk-forward analysis periods
-  - PSI/CSI drift detection
-  - Kelly Criterion capital allocation
-  - Graceful shutdown modes
-  - Trade rationale logging
-  - Backtest/live skew monitoring
-
-### Strategy Marketplace Expansion (November 4, 2025)
-Expanded from 4 to 11 total strategies with comprehensive configuration panels:
-
-**New Strategies Added:**
-1. **Normal Grid Bot** - Simplified grid trading with basic upper/lower price ranges
-2. **Normal DCA Bot** - Basic dollar-cost averaging with simple safety orders
-3. **TradingView Webhook Bot** - 30+ settings including webhook URL, alert parser, execution controls, compliance
-4. **Dip Analyser Bot** - 40+ institutional settings with Smart Money Concepts, TWAP execution, forced accumulation
-5. **Trend-Following Bot** - EMA Crossover + ATR Filter with trailing stops
-6. **Mean Reversion Bot** - Z-Score + RSI Bands for ranging markets
-7. **Volatility Breakout Bot** - Donchian/Keltner channel breakouts with time-of-day filters
-
-**Implementation Details:**
-- Created `StrategyConfigPanelLayout` component with tabbed interface for complex strategies
-- Added 7 new TypeScript interfaces to `types.ts`:
-  - `NormalGridConfig`, `NormalDCAConfig`
-  - `TrendFollowingConfig`, `MeanReversionConfig`, `VolatilityBreakoutConfig`
-  - `TradingViewWebhookConfig`, `DipAnalyserConfig`, `SignalBotConfig`
-- Created dedicated config panel components in `components/strategies/`:
-  - NormalGridConfigPanel, NormalDCAConfigPanel
-  - TrendFollowingConfigPanel, MeanReversionConfigPanel, VolatilityBreakoutConfigPanel
-  - TradingViewWebhookConfigPanel, DipAnalyserConfigPanel
-- Updated `StrategyType` to include all 11 strategy types
-- Implemented `getDefaultConfig()` function with sensible defaults for each strategy
-- Updated `renderConfigPanel()` to route to appropriate config panels
-
-**Strategy Marketplace Total: 11 Strategies**
-1. Advanced DCA ✅
-2. Advanced Grid ✅
-3. Normal Grid ✅ (NEW)
-4. Normal DCA ✅ (NEW)
-5. Quantitative Strategy ✅ (institutional algorithmic)
-6. Signal Bot ✅
-7. TradingView Webhook Bot ✅ (NEW)
-8. Dip Analyser Bot ✅ (NEW)
-9. Trend-Following Bot ✅ (NEW)
-10. Mean Reversion Bot ✅ (NEW)
-11. Volatility Breakout Bot ✅ (NEW)
-
-### Comprehensive Responsive Design Implementation (November 4, 2025)
-Implemented mobile-first responsive design across the entire application to support all screen sizes from mobile (320px+) to desktop (1920px+).
-
-**Core Layout Updates:**
-- **Mobile Navigation**: Implemented hamburger menu for mobile devices with sliding sidebar and backdrop overlay
-- **Responsive Sidebars**: 
-  - Desktop: Fixed sidebar (w-64 or w-20 when collapsed)
-  - Mobile/Tablet: Off-canvas sidebar with slide-in animation, hidden by default
-  - Added close button for mobile, collapse button for desktop
-- **Dashboard Shells**: Both UserDashboard and AdminDashboard now support mobile menu state management
-- **Backdrop Overlay**: Added semi-transparent backdrop for mobile menu with click-to-close functionality
-
-**Header Enhancements:**
-- **UserHeader & AdminHeader**: 
-  - Added hamburger menu button (visible on mobile only)
-  - Responsive title sizes (text-lg sm:text-xl md:text-2xl)
-  - Hidden secondary elements on small screens (notifications, theme toggle visible on sm+ only)
-  - Responsive avatar sizes (h-7 sm:h-8)
-  - Profile dropdown width adjusts (w-64 sm:w-72) with max-height and scroll
-  - Responsive spacing (px-3 sm:px-4 md:px-6, py-3 sm:py-4)
-
-**Component-Level Responsive Updates:**
-- **Card Component**: Responsive padding (p-3 sm:p-4 md:p-6) and border radius (rounded-lg sm:rounded-xl)
-- **StrategyConfigPanelLayout**:
-  - Responsive tab sizing (px-3 sm:px-4, text-xs sm:text-sm)
-  - Horizontal scroll for tabs on narrow screens
-  - Stacked buttons on mobile (flex-col sm:flex-row)
-  - Full-width buttons on mobile (w-full sm:w-auto)
-- **LoginPage**: 
-  - Responsive container padding and sizing
-  - Adaptive input fields (px-3 sm:px-4, py-2.5 sm:py-3)
-  - Responsive text sizes throughout
-  - Adjusted background blur circles for mobile
-
-**Responsive Breakpoints Used:**
-- **Mobile**: Default (320px+) - Single column layouts, stacked elements, hamburger menu
-- **Small (sm:)**: 640px+ - Two-column grids, visible secondary elements
-- **Medium (md:)**: 768px+ - Three-column grids, expanded spacing, visible profile details
-- **Large (lg:)**: 1024px+ - Sidebar always visible, desktop collapse button, full layouts
-- **Extra Large (xl:)**: 1280px+ - Maximum content widths, optimal desktop experience
-
-**Layout Patterns Implemented:**
-- Mobile-first approach with progressive enhancement
-- Flexible grid systems that stack on mobile
-- Touch-friendly button sizes (minimum 44px tap targets)
-- Horizontal scrolling for wide content (tabs, tables)
-- Collapsible sections and accordions for mobile
-- Responsive typography scaling
-- Adaptive spacing (margins and padding scale with breakpoints)
-
-**All Views Responsive:**
-- ✅ LoginPage - Full responsive design
-- ✅ UserDashboard - 12 views with responsive Card-based layouts
-- ✅ AdminDashboard - 8 views with responsive Card-based layouts
-- ✅ All 11 Strategy Configuration Panels - Responsive tabs and forms
-- ✅ TradingChart - Auto-resize with ResizeObserver
-- ✅ Headers, Sidebars, Dropdowns - Full mobile support
-
-**Technical Implementation:**
-- Tailwind CSS responsive utility classes (sm:, md:, lg:, xl: prefixes)
-- CSS transforms for sidebar animations (translate-x-full, translate-x-0)
-- Flexbox and CSS Grid with responsive direction changes
-- Conditional rendering for mobile vs desktop elements
-- State management for mobile menu visibility
-- Touch-optimized interactions
-
-## File Organization
-- `/components`: Reusable UI components (Card, Icon, ToggleSwitch, TradingChart, UserHeader, AdminHeader)
-- `/contexts`: React contexts (AuthContext for authentication state)
-- `/pages/LoginPage.tsx`: Authentication login page
-- `/pages/user-dashboard`: User-facing trading interface (12 views)
-- `/pages/admin-dashboard`: Administrative interface (8 views)
-- `/types.ts`: TypeScript type definitions including authentication types
-- `App.tsx`: Main application component with authentication routing and theme context
+## External Dependencies
+- **React 19.2.0 & TypeScript:** Core frontend development stack.
+- **Vite 6.2.0:** Build tool for development and production.
+- **TailwindCSS (via CDN):** Utility-first CSS framework for styling.
+- **Recharts & Lightweight Charts:** Charting libraries.
+- **react-ts-tradingview-widgets:** For integrating professional TradingView charts.
+- **Gemini API:** Used for AI-powered features, requiring `GEMINI_API_KEY`.
+- **Binance Exchange:** Real-time price data source for TradingView widgets.
+- **Telegram/Discord/Custom API:** Potential signal sources for the Signal Bot.

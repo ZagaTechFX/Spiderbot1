@@ -13,6 +13,7 @@ import MeanReversionConfigPanel from '../../components/strategies/MeanReversionC
 import VolatilityBreakoutConfigPanel from '../../components/strategies/VolatilityBreakoutConfigPanel';
 import TradingViewWebhookConfigPanel from '../../components/strategies/TradingViewWebhookConfigPanel';
 import DipAnalyserConfigPanel from '../../components/strategies/DipAnalyserConfigPanel';
+import SignalBotConfigPanel from '../../components/strategies/SignalBotConfigPanel';
 
 // --- MOCK DATA ---
 const mockUserStrategies: UserStrategy[] = [
@@ -636,6 +637,8 @@ const StrategiesView: React.FC = () => {
                 return { marketType: 'SPOT', webhookURL: '', alertParser: '{"action": "{{strategy.order.action}}", "ticker": "{{ticker}}"}', signalSourceTrustScore: 7, maximumSlippage: 0.5, orderTimeout: 30, positionSizeOverride: 'Use Signal', fixedPositionSize: 5, dailyLossLimit: 5, maxExchangeAPIRateUsage: 80, orderTypeDefault: 'Market', maxOpenPositions: 5, minimumPositionSize: 10, takeProfitPercentage: 5, stopLossPercentage: 3, globalCapitalAllocation: 50, maxPositionLeverage: 5, dailyTradeCountLimit: 20, ignoreTickersList: '', confirmationWebhookURL: '', logLevel: 'Info', timeZoneSetting: 'UTC', partialFillHandling: 'Wait for Fill', cooldownPeriod: 300, trailingStopActivation: 2, maxDrawdown: 20, exchangeTimeOffset: 0, executionEnvironment: 'Paper Trading', whitelistedIPAddresses: '', maxTradeFeePercentage: 0.1, minimumProfitTarget: 5, strategyTagID: '', accountMode: 'Single', webhookRetryMechanism: 'Exponential Backoff', leverage: 1, marginMode: 'Isolated' } as TradingViewWebhookConfig;
             case 'Dip Analyser Bot':
                 return { marketType: 'SPOT', dipScoreComponents: { rsiDivergence: true, volumeSpike: true, priceLevelTest: true }, scoreThreshold: 70, minimumDipDepth: 5, timeframeForAnalysis: '4h', buyAggression: 'Moderate', quickProfitTarget: 3, progressiveStop: true, progressiveStopPercentage: 1.5, maximumConcurrentDips: 3, forcedAccumulationMode: false, recoveryConfirmationFilter: 10, liquiditySweepRequirement: false, fvgRetracementPercentage: 50, orderBlockProximityFilter: 1, maxOrderBookSkew: 65, executionSliceSize: 100, twapHorizon: 15, maxCumulativeSlippage: 0.2, dcaTrancheSizeMultiplier: 0.5, dcaProfitExitThreshold: false, dcaProfitExitPercentage: 3, portfolioHedgeRatioAdjustment: 0.1, maxLossFromAverageEntry: 15, assetAllocationHardCap: 30, botHealthCheckInterval: 15, apiPermissionValidation: 'Read/Trade', autoPauseOnNewsEvent: false, newsEventSeverity: 'High', volumeParticipationRate: 1, timeBasedDipInvalidation: 30, minAssetHoldingQuantity: 0, leverage: 1, marginMode: 'Isolated' } as DipAnalyserConfig;
+            case 'Signal Bot':
+                return { marketType: 'SPOT', signalSource: 'Telegram', messageParser: '^(BUY|SELL)\\s+(\\w+)\\s+@\\s+([\\d.]+)', providerTrustScore: 7, signalVerificationDelay: 5, maximumPositions: 5, correlationLimit: 75, autoStopOnProviderError: true, maxOrderDeviation: 2, maxPortfolioDrawdown: 20, auditLogVerbosity: 'Standard', assetWhitelist: 'BTC,ETH,SOL,BNB', timeOfDayTradingWindow: '00:00-23:59', maxDailyLoss: 1000, maxWeeklyLoss: 5000, orderTypePreference: 'Limit', slippageTolerance: 0.5, fillOrKillTimeout: 5000, dynamicPositionSizing: '% of Balance', dataFeedLatencyThreshold: 1000, maxAPIRequestRate: 60, emergencyKillSwitchKey: '', signalReentryDelay: 15, tpSlOverwrite: 'Allow', partialFillPolicy: 'Hold', marketDataTolerance: 2, orderTradeRatioLimit: 20, strategyVersionLock: 'v1.0.0', tradeIdentifierTag: 'SIGNAL_BOT_1', pnlReportingFrequency: 'Real-Time', vendorSignalLicenseKey: '', minExchangeLiquidity: 1000000, postTradeComplianceDelay: 500, circuitBreakerResponse: 'Pause New', requiredDataFields: ['Asset', 'Action', 'Price'], exposureNettingMode: 'Net', maxVolatilityFilter: 100, maxSlippagePerPosition: 1, strategyConfidenceScoreThreshold: 0.6, auditLogRetentionPeriod: 1825, correlationCheckLookbackWindow: '30 Days', externalRiskSystemHeartbeatTimeout: 60, orderRoutingDestinationOverride: '', signalParsingFailureLimit: 5, tradeExecutionWindowMaxLatency: 1000, maxAdverseExcursion: 10, outOfSampleFailureThreshold: 3, leverage: 1, marginMode: 'Isolated' } as SignalBotConfig;
             default:
                 return {};
         }
@@ -747,7 +750,7 @@ const StrategiesView: React.FC = () => {
             case 'Dip Analyser Bot':
                 return <DipAnalyserConfigPanel config={currentConfig} onConfigChange={setCurrentConfig} onSave={handleSaveStrategy} onSaveTemplate={handleSaveTemplate} />;
             case 'Signal Bot':
-                return <Card><p className="text-gray-600 dark:text-dark-text-secondary">Signal Bot configuration panel coming soon with institutional-grade controls.</p></Card>;
+                return <SignalBotConfigPanel config={currentConfig} onConfigChange={setCurrentConfig} onSave={handleSaveStrategy} onSaveTemplate={handleSaveTemplate} />;
             default:
                 return <Card><p>This strategy is not yet configurable.</p></Card>;
         }
