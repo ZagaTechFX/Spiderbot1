@@ -5,22 +5,22 @@ import ToggleSwitch from '../ToggleSwitch';
 
 const InputField: React.FC<{ label: string, type?: string, value: any, onChange: (e: any) => void, unit?: string, helpText?: string }> = ({ label, type = 'text', value, onChange, unit, helpText }) => (
     <div>
-        <label className="block text-sm font-medium text-gray-500 dark:text-dark-text-secondary">{label}</label>
-        <div className="mt-1 flex items-center">
-            <input type={type} value={value} onChange={onChange} className="w-full bg-gray-50 dark:bg-dark-bg-secondary border border-gray-300 dark:border-dark-border rounded-md shadow-sm p-2 focus:ring-primary focus:border-primary text-sm" />
-            {unit && <span className="ml-2 text-gray-500 dark:text-dark-text-secondary whitespace-nowrap text-sm">{unit}</span>}
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{label}</label>
+        <div className="flex items-center gap-2">
+            <input type={type} value={value} onChange={onChange} className="flex-1 bg-white dark:bg-dark-bg-secondary border border-gray-300 dark:border-dark-border rounded-lg shadow-sm px-3 py-2.5 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary text-sm transition-colors" />
+            {unit && <span className="text-gray-600 dark:text-gray-400 whitespace-nowrap text-sm font-medium">{unit}</span>}
         </div>
-        {helpText && <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">{helpText}</p>}
+        {helpText && <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400 leading-relaxed">{helpText}</p>}
     </div>
 );
 
 const SelectField: React.FC<{ label: string, value: any, onChange: (e: any) => void, children?: React.ReactNode, helpText?: string }> = ({ label, value, onChange, children, helpText }) => (
     <div>
-        <label className="block text-sm font-medium text-gray-500 dark:text-dark-text-secondary mb-1">{label}</label>
-        <select value={value} onChange={onChange} className="w-full bg-gray-50 dark:bg-dark-bg-secondary border border-gray-300 dark:border-dark-border rounded-md shadow-sm p-2 focus:ring-primary focus:border-primary text-sm">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{label}</label>
+        <select value={value} onChange={onChange} className="w-full bg-white dark:bg-dark-bg-secondary border border-gray-300 dark:border-dark-border rounded-lg shadow-sm px-3 py-2.5 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary text-sm transition-colors">
             {children}
         </select>
-        {helpText && <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">{helpText}</p>}
+        {helpText && <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400 leading-relaxed">{helpText}</p>}
     </div>
 );
 
@@ -52,7 +52,7 @@ const TradingViewWebhookConfigPanel: React.FC<TradingViewWebhookConfigPanelProps
     };
 
     const coreLogicContent = (
-        <div className="space-y-3">
+        <div className="space-y-4">
             <MarketTypeSelector value={config.marketType} onChange={handleChange('marketType')} />
             <InputField label="Webhook URL" type="text" value={config.webhookURL} onChange={handleChange('webhookURL')} helpText="Endpoint for receiving TradingView alerts" />
             <div>
@@ -78,7 +78,7 @@ const TradingViewWebhookConfigPanel: React.FC<TradingViewWebhookConfigPanelProps
     );
 
     const riskManagementContent = (
-        <div className="space-y-3">
+        <div className="space-y-4">
             <InputField label="Maximum Slippage" type="number" value={config.maximumSlippage} onChange={handleChange('maximumSlippage')} unit="%" helpText="Rejects fills worse than this threshold" />
             <InputField label="Daily Loss Limit" type="number" value={config.dailyLossLimit} onChange={handleChange('dailyLossLimit')} unit="%" helpText="Stops trading for 24h after loss limit" />
             <InputField label="Max Drawdown" type="number" value={config.maxDrawdown} onChange={handleChange('maxDrawdown')} unit="%" helpText="Global kill switch trigger" />
@@ -91,7 +91,7 @@ const TradingViewWebhookConfigPanel: React.FC<TradingViewWebhookConfigPanelProps
     );
 
     const executionContent = (
-        <div className="space-y-3">
+        <div className="space-y-4">
             <SelectField label="Order Type Default" value={config.orderTypeDefault} onChange={handleChange('orderTypeDefault')} helpText="Type used if signal doesn't specify">
                 <option value="Market">Market</option>
                 <option value="Limit">Limit</option>
@@ -110,7 +110,7 @@ const TradingViewWebhookConfigPanel: React.FC<TradingViewWebhookConfigPanelProps
     );
 
     const complianceContent = (
-        <div className="space-y-3">
+        <div className="space-y-4">
             <SelectField label="Log Level" value={config.logLevel} onChange={handleChange('logLevel')} helpText="Verbosity of internal logging">
                 <option value="Info">Info</option>
                 <option value="Debug">Debug</option>

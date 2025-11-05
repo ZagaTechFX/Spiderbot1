@@ -32,6 +32,33 @@ The application is a frontend-only platform built with React 19.2.0 and TypeScri
 - **Modularity:** Components are organized into reusable UI elements, context providers for state management (e.g., AuthContext), and dedicated pages for different functionalities (login, user dashboard, admin dashboard).
 - **TypeScript:** Strong typing is enforced across the codebase for improved maintainability and error detection.
 
+## Recent Updates
+
+### UI/UX Improvements - Strategy Configuration Panels (November 5, 2025)
+**Standardized and enhanced styling across all bot configuration panels for improved usability:**
+
+**Visual Enhancements:**
+- Increased content area max-height from `60vh` to `65vh` for better visibility
+- Enhanced padding from `p-3 sm:p-4` to `p-4 sm:p-6` for improved spacing
+- Increased field spacing from `space-y-3` to `space-y-4` for better readability
+- Improved input field styling:
+  - Larger padding (`px-3 py-2.5`) for better touch targets
+  - Better color contrast for labels (`text-gray-700 dark:text-gray-300`)
+  - Rounded corners (`rounded-lg`) for modern appearance
+  - Enhanced focus states with 2px ring
+  - Smooth color transitions on all interactive elements
+- Better unit label styling with medium font weight
+- More readable help text with improved line-height (`leading-relaxed`)
+- Consistent gap spacing (`gap-2`) between inputs and units
+
+**Affected Components:**
+- Signal Bot Configuration (6 tabs, 60+ settings) - **FULLY FUNCTIONAL**
+- TradingView Webhook Configuration (4 tabs, 30+ settings)
+- Dip Analyser Configuration (4 tabs, 40+ settings)
+- All strategy configuration panels now have consistent styling
+
+**Result:** Professional, clean interface with improved usability and mobile responsiveness across all bot configuration panels.
+
 ## External Dependencies
 - **React 19.2.0 & TypeScript:** Core frontend development stack.
 - **Vite 6.2.0:** Build tool for development and production.

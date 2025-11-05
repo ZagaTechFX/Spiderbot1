@@ -47,7 +47,7 @@ const StrategyConfigPanelLayout: React.FC<StrategyConfigPanelLayoutProps> = ({
                 </div>
             </div>
 
-            <div className="p-3 sm:p-4 max-h-[60vh] overflow-y-auto">
+            <div className="p-4 sm:p-6 max-h-[65vh] overflow-y-auto">
                 {tabs.find(tab => tab.id === activeTab)?.content}
             </div>
 

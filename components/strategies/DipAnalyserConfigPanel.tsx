@@ -5,22 +5,22 @@ import ToggleSwitch from '../ToggleSwitch';
 
 const InputField: React.FC<{ label: string, type?: string, value: any, onChange: (e: any) => void, unit?: string, helpText?: string }> = ({ label, type = 'text', value, onChange, unit, helpText }) => (
     <div>
-        <label className="block text-sm font-medium text-gray-500 dark:text-dark-text-secondary">{label}</label>
-        <div className="mt-1 flex items-center">
-            <input type={type} value={value} onChange={onChange} className="w-full bg-gray-50 dark:bg-dark-bg-secondary border border-gray-300 dark:border-dark-border rounded-md shadow-sm p-2 focus:ring-primary focus:border-primary text-sm" />
-            {unit && <span className="ml-2 text-gray-500 dark:text-dark-text-secondary whitespace-nowrap text-sm">{unit}</span>}
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{label}</label>
+        <div className="flex items-center gap-2">
+            <input type={type} value={value} onChange={onChange} className="flex-1 bg-white dark:bg-dark-bg-secondary border border-gray-300 dark:border-dark-border rounded-lg shadow-sm px-3 py-2.5 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary text-sm transition-colors" />
+            {unit && <span className="text-gray-600 dark:text-gray-400 whitespace-nowrap text-sm font-medium">{unit}</span>}
         </div>
-        {helpText && <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">{helpText}</p>}
+        {helpText && <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400 leading-relaxed">{helpText}</p>}
     </div>
 );
 
 const SelectField: React.FC<{ label: string, value: any, onChange: (e: any) => void, children?: React.ReactNode, helpText?: string }> = ({ label, value, onChange, children, helpText }) => (
     <div>
-        <label className="block text-sm font-medium text-gray-500 dark:text-dark-text-secondary mb-1">{label}</label>
-        <select value={value} onChange={onChange} className="w-full bg-gray-50 dark:bg-dark-bg-secondary border border-gray-300 dark:border-dark-border rounded-md shadow-sm p-2 focus:ring-primary focus:border-primary text-sm">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{label}</label>
+        <select value={value} onChange={onChange} className="w-full bg-white dark:bg-dark-bg-secondary border border-gray-300 dark:border-dark-border rounded-lg shadow-sm px-3 py-2.5 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary text-sm transition-colors">
             {children}
         </select>
-        {helpText && <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">{helpText}</p>}
+        {helpText && <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400 leading-relaxed">{helpText}</p>}
     </div>
 );
 
@@ -72,7 +72,7 @@ const DipAnalyserConfigPanel: React.FC<DipAnalyserConfigPanelProps> = ({ config,
     };
 
     const coreLogicContent = (
-        <div className="space-y-3">
+        <div className="space-y-4">
             <MarketTypeSelector value={config.marketType} onChange={handleChange('marketType')} />
             
             <div className="border dark:border-dark-border rounded-lg p-3 bg-gray-50 dark:bg-dark-bg-secondary">
@@ -101,7 +101,7 @@ const DipAnalyserConfigPanel: React.FC<DipAnalyserConfigPanelProps> = ({ config,
     );
 
     const riskManagementContent = (
-        <div className="space-y-3">
+        <div className="space-y-4">
             <InputField label="Quick Profit Target" type="number" value={config.quickProfitTarget} onChange={handleChange('quickProfitTarget')} unit="%" helpText="Exit trap for initial bounce" />
             <ToggleField label="Progressive Stop" enabled={config.progressiveStop} onChange={handleChange('progressiveStop')} helpText="Lock in profits after quick profit hit" />
             {config.progressiveStop && (
@@ -116,7 +116,7 @@ const DipAnalyserConfigPanel: React.FC<DipAnalyserConfigPanelProps> = ({ config,
     );
 
     const executionContent = (
-        <div className="space-y-3">
+        <div className="space-y-4">
             <InputField label="Execution Slice Size" type="number" value={config.executionSliceSize} onChange={handleChange('executionSliceSize')} unit="$" helpText="Stealth trading - break into slices" />
             <InputField label="TWAP Horizon" type="number" value={config.twapHorizon} onChange={handleChange('twapHorizon')} unit="minutes" helpText="Time-weighted average price distribution" />
             <InputField label="Max Cumulative Slippage" type="number" value={config.maxCumulativeSlippage} onChange={handleChange('maxCumulativeSlippage')} unit="%" helpText="Per DCA tranche cost control" />
@@ -131,7 +131,7 @@ const DipAnalyserConfigPanel: React.FC<DipAnalyserConfigPanelProps> = ({ config,
     );
 
     const complianceContent = (
-        <div className="space-y-3">
+        <div className="space-y-4">
             <ToggleField label="Liquidity Sweep Requirement" enabled={config.liquiditySweepRequirement} onChange={handleChange('liquiditySweepRequirement')} helpText="Smart Money filter - require stop sweep" />
             <InputField label="FVG Retracement Percentage" type="number" value={config.fvgRetracementPercentage} onChange={handleChange('fvgRetracementPercentage')} unit="% gap" helpText="Fair Value Gap anchor" />
             <InputField label="Order Block Proximity Filter" type="number" value={config.orderBlockProximityFilter} onChange={handleChange('orderBlockProximityFilter')} unit="x ATR" helpText="Demand zone entry distance" />

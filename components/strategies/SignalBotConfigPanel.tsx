@@ -5,8 +5,8 @@ import ToggleSwitch from '../ToggleSwitch';
 
 const InputField: React.FC<{ label: string, type?: string, value: any, onChange: (e: any) => void, unit?: string, helpText?: string, placeholder?: string, min?: string, max?: string, step?: string }> = ({ label, type = 'text', value, onChange, unit, helpText, placeholder, min, max, step }) => (
     <div>
-        <label className="block text-sm font-medium text-gray-500 dark:text-dark-text-secondary">{label}</label>
-        <div className="mt-1 flex items-center">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{label}</label>
+        <div className="flex items-center gap-2">
             <input 
                 type={type} 
                 value={value} 
@@ -15,25 +15,25 @@ const InputField: React.FC<{ label: string, type?: string, value: any, onChange:
                 min={min}
                 max={max}
                 step={step}
-                className="w-full bg-gray-50 dark:bg-dark-bg-secondary border border-gray-300 dark:border-dark-border rounded-md shadow-sm p-2 focus:ring-primary focus:border-primary text-sm" 
+                className="flex-1 bg-white dark:bg-dark-bg-secondary border border-gray-300 dark:border-dark-border rounded-lg shadow-sm px-3 py-2.5 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary text-sm transition-colors" 
             />
-            {unit && <span className="ml-2 text-gray-500 dark:text-dark-text-secondary whitespace-nowrap text-sm">{unit}</span>}
+            {unit && <span className="text-gray-600 dark:text-gray-400 whitespace-nowrap text-sm font-medium">{unit}</span>}
         </div>
-        {helpText && <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">{helpText}</p>}
+        {helpText && <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400 leading-relaxed">{helpText}</p>}
     </div>
 );
 
 const SelectField: React.FC<{ label: string, value: any, onChange: (e: any) => void, children?: React.ReactNode, helpText?: string }> = ({ label, value, onChange, children, helpText }) => (
     <div>
-        <label className="block text-sm font-medium text-gray-500 dark:text-dark-text-secondary mb-1">{label}</label>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{label}</label>
         <select 
             value={value} 
             onChange={onChange} 
-            className="w-full bg-gray-50 dark:bg-dark-bg-secondary border border-gray-300 dark:border-dark-border rounded-md shadow-sm p-2 focus:ring-primary focus:border-primary text-sm"
+            className="w-full bg-white dark:bg-dark-bg-secondary border border-gray-300 dark:border-dark-border rounded-lg shadow-sm px-3 py-2.5 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary text-sm transition-colors"
         >
             {children}
         </select>
-        {helpText && <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">{helpText}</p>}
+        {helpText && <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400 leading-relaxed">{helpText}</p>}
     </div>
 );
 
@@ -53,7 +53,7 @@ const SignalBotConfigPanel: React.FC<SignalBotConfigPanelProps> = ({ config, onC
     };
 
     const basicSignalContent = (
-        <div className="space-y-3">
+        <div className="space-y-4">
             <SelectField label="Signal Source" value={config.signalSource} onChange={handleChange('signalSource')} helpText="Platform where signals are received">
                 <option value="Telegram">Telegram</option>
                 <option value="Discord">Discord</option>
@@ -87,7 +87,7 @@ const SignalBotConfigPanel: React.FC<SignalBotConfigPanelProps> = ({ config, onC
     );
 
     const executionContent = (
-        <div className="space-y-3">
+        <div className="space-y-4">
             <SelectField label="Order Type Preference" value={config.orderTypePreference} onChange={handleChange('orderTypePreference')} helpText="Limit is safer, Market is faster but risks slippage">
                 <option value="Limit">Limit</option>
                 <option value="Market">Market</option>
@@ -115,7 +115,7 @@ const SignalBotConfigPanel: React.FC<SignalBotConfigPanelProps> = ({ config, onC
     );
 
     const riskContent = (
-        <div className="space-y-3">
+        <div className="space-y-4">
             <InputField label="Max Portfolio Drawdown" type="number" value={config.maxPortfolioDrawdown} onChange={handleChange('maxPortfolioDrawdown')} unit="%" helpText="Halt all trading if portfolio drops this % from peak" />
             <InputField label="Max Daily Loss" type="number" value={config.maxDailyLoss} onChange={handleChange('maxDailyLoss')} unit="$" helpText="Hard cap on daily losses; triggers auto-stop" />
             <InputField label="Max Weekly Loss" type="number" value={config.maxWeeklyLoss} onChange={handleChange('maxWeeklyLoss')} unit="$" helpText="Hard cap on weekly losses" />
@@ -136,7 +136,7 @@ const SignalBotConfigPanel: React.FC<SignalBotConfigPanelProps> = ({ config, onC
     );
 
     const complianceContent = (
-        <div className="space-y-3">
+        <div className="space-y-4">
             <SelectField label="Audit Log Verbosity Level" value={config.auditLogVerbosity} onChange={handleChange('auditLogVerbosity')} helpText="Level of detail logged for every action">
                 <option value="Minimal">Minimal</option>
                 <option value="Standard">Standard</option>
@@ -156,7 +156,7 @@ const SignalBotConfigPanel: React.FC<SignalBotConfigPanelProps> = ({ config, onC
     );
 
     const monitoringContent = (
-        <div className="space-y-3">
+        <div className="space-y-4">
             <InputField label="Data Feed Latency Threshold" type="number" value={config.dataFeedLatencyThreshold} onChange={handleChange('dataFeedLatencyThreshold')} unit="ms" helpText="Pause trading if market data is older than this" />
             <InputField label="Max API Request Rate (per min)" type="number" value={config.maxAPIRequestRate} onChange={handleChange('maxAPIRequestRate')} helpText="Limit orders/cancellations to avoid rate-limiting" />
             <InputField label="Emergency Kill Switch API Key" type="password" value={config.emergencyKillSwitchKey} onChange={handleChange('emergencyKillSwitchKey')} placeholder="Enter emergency key" helpText="Secondary key to instantly cancel all orders and close positions" />
@@ -177,7 +177,7 @@ const SignalBotConfigPanel: React.FC<SignalBotConfigPanelProps> = ({ config, onC
     );
 
     const advancedContent = (
-        <div className="space-y-3">
+        <div className="space-y-4">
             <InputField label="Strategy Confidence Score Threshold (0.0-1.0)" type="number" value={config.strategyConfidenceScoreThreshold} onChange={handleChange('strategyConfidenceScoreThreshold')} min="0" max="1" step="0.01" helpText="Only execute if strategy's live performance score exceeds this" />
             <InputField label="Out-of-Sample Failure Threshold" type="number" value={config.outOfSampleFailureThreshold} onChange={handleChange('outOfSampleFailureThreshold')} helpText="Consecutive trade failures before forcing paper-trading mode" />
             <div>
