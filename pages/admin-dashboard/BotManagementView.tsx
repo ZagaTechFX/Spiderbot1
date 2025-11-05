@@ -56,31 +56,9 @@ const BotManagementView: React.FC = () => {
                                     <td className="px-6 py-4">{bot.drawdown.toFixed(1)}%</td>
                                     <td className="px-6 py-4">
                                         <div className="flex space-x-2">
-                                             <button 
-                                                onClick={() => alert(`Force Pause Bot\n\nBot ID: ${bot.botId}\nStrategy: ${bot.strategy}\n\nThis will immediately pause the bot and prevent it from executing new trades.`)}
-                                                title="Force Pause" 
-                                                className="text-yellow-500 hover:text-yellow-700"
-                                             >
-                                                <Icon name="warning" className="h-5 w-5" />
-                                             </button>
-                                             <button 
-                                                onClick={() => {
-                                                    if (confirm(`Force Close Position\n\nBot ID: ${bot.botId}\nPair: ${bot.pair}\n\nThis will close all open positions immediately. Are you sure?`)) {
-                                                        alert('Position closed successfully');
-                                                    }
-                                                }}
-                                                title="Force Close Position" 
-                                                className="text-danger hover:text-red-700"
-                                             >
-                                                <Icon name="cross" className="h-5 w-5" />
-                                             </button>
-                                             <button 
-                                                onClick={() => alert(`Bot Details\n\nBot ID: ${bot.botId}\nUser: ${bot.userId}\nStrategy: ${bot.strategy}\nPair: ${bot.pair}\nStatus: ${bot.status}\nP&L: $${bot.pnl}\nDrawdown: ${bot.drawdown}%\n\nThis would open detailed bot analytics and configuration.`)}
-                                                title="View Details" 
-                                                className="text-primary hover:text-primary-hover"
-                                             >
-                                                <Icon name="search" className="h-5 w-5" />
-                                             </button>
+                                             <button title="Force Pause" className="text-yellow-500 hover:text-yellow-700"><Icon name="warning" className="h-5 w-5" /></button>
+                                             <button title="Force Close Position" className="text-danger hover:text-red-700"><Icon name="cross" className="h-5 w-5" /></button>
+                                             <button title="View Details" className="text-primary hover:text-primary-hover"><Icon name="search" className="h-5 w-5" /></button>
                                         </div>
                                     </td>
                                 </tr>

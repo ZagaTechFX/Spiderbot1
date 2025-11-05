@@ -4,13 +4,11 @@ import Icon from '../../components/Icon';
 interface SidebarProps {
   isCollapsed: boolean;
   setSidebarCollapsed: (collapsed: boolean) => void;
-  isMobileMenuOpen: boolean;
-  setMobileMenuOpen: (open: boolean) => void;
   activeView: string;
   setActiveView: (view: string) => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, setSidebarCollapsed, isMobileMenuOpen, setMobileMenuOpen, activeView, setActiveView }) => {
+const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, setSidebarCollapsed, activeView, setActiveView }) => {
   const navItems = [
     { name: 'Dashboard', icon: 'dashboard' },
     { name: 'Active Trades', icon: 'trades' },
@@ -31,14 +29,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, setSidebarCollapsed, isM
   ];
 
   return (
-    <div className={`fixed top-0 left-0 h-full bg-white dark:bg-dark-card text-gray-700 dark:text-dark-text-secondary flex flex-col transition-all duration-300 shadow-2xl z-40 ${isCollapsed ? 'w-20' : 'w-64'} ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}>
+    <div className={`fixed top-0 left-0 h-full bg-white dark:bg-dark-card text-gray-700 dark:text-dark-text-secondary flex flex-col transition-all duration-300 shadow-2xl z-40 ${isCollapsed ? 'w-20' : 'w-64'}`}>
       <div className="flex items-center justify-between p-4 h-16 border-b dark:border-dark-border">
-        {!isCollapsed && <span className="text-xl sm:text-2xl font-bold text-primary">SpiderBot</span>}
-        <button onClick={() => setSidebarCollapsed(!isCollapsed)} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-dark-bg-secondary hidden lg:block">
+        {!isCollapsed && <span className="text-2xl font-bold text-primary">SpiderBot</span>}
+        <button onClick={() => setSidebarCollapsed(!isCollapsed)} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-dark-bg-secondary">
           <Icon name={isCollapsed ? 'chevronRight' : 'chevronLeft'} className="h-6 w-6" />
-        </button>
-        <button onClick={() => setMobileMenuOpen(false)} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-dark-bg-secondary lg:hidden">
-          <Icon name="close" className="h-6 w-6" />
         </button>
       </div>
       <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto">

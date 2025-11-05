@@ -1,20 +1,13 @@
 import path from 'path';
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
-import { fileURLToPath } from 'url';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, '.', '');
     return {
       server: {
-        port: 5000,
+        port: 3000,
         host: '0.0.0.0',
-        allowedHosts: true,
-        hmr: {
-          clientPort: 5000,
-        },
       },
       plugins: [react()],
       define: {

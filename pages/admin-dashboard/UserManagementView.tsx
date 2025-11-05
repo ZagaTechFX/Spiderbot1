@@ -4,10 +4,10 @@ import { User } from '../../types';
 import Icon from '../../components/Icon';
 
 const mockUsers: User[] = [
-    { id: 'USR-11A2', username: 'johndoe', role: 'user', name: 'John Doe', email: 'john.doe@email.com', avatarUrl: 'https://picsum.photos/seed/john/100', kycStatus: 'Verified', subscriptionPlan: 'Pro', lastLogin: '2h ago' },
-    { id: 'USR-B3C4', username: 'janesmith', role: 'user', name: 'Jane Smith', email: 'jane.smith@email.com', avatarUrl: 'https://picsum.photos/seed/jane/100', kycStatus: 'Pending', subscriptionPlan: 'Starter', lastLogin: '1d ago' },
-    { id: 'USR-9D5E', username: 'samwilson', role: 'user', name: 'Sam Wilson', email: 'sam.wilson@email.com', avatarUrl: 'https://picsum.photos/seed/sam/100', kycStatus: 'Not Submitted', subscriptionPlan: 'Free', lastLogin: '5d ago' },
-    { id: 'USR-F6G7', username: 'emilybrown', role: 'user', name: 'Emily Brown', email: 'emily.brown@email.com', avatarUrl: 'https://picsum.photos/seed/emily/100', kycStatus: 'Verified', subscriptionPlan: 'Expert', lastLogin: '5m ago' },
+    { id: 'USR-11A2', name: 'John Doe', email: 'john.doe@email.com', avatarUrl: 'https://picsum.photos/seed/john/100', kycStatus: 'Verified', subscriptionPlan: 'Pro', lastLogin: '2h ago' },
+    { id: 'USR-B3C4', name: 'Jane Smith', email: 'jane.smith@email.com', avatarUrl: 'https://picsum.photos/seed/jane/100', kycStatus: 'Pending', subscriptionPlan: 'Starter', lastLogin: '1d ago' },
+    { id: 'USR-9D5E', name: 'Sam Wilson', email: 'sam.wilson@email.com', avatarUrl: 'https://picsum.photos/seed/sam/100', kycStatus: 'Not Submitted', subscriptionPlan: 'Free', lastLogin: '5d ago' },
+    { id: 'USR-F6G7', name: 'Emily Brown', email: 'emily.brown@email.com', avatarUrl: 'https://picsum.photos/seed/emily/100', kycStatus: 'Verified', subscriptionPlan: 'Expert', lastLogin: '5m ago' },
 ];
 
 
@@ -45,10 +45,7 @@ const UserManagementView: React.FC = () => {
                         className="w-full pl-10 p-2 border dark:border-dark-border rounded-lg bg-gray-50 dark:bg-dark-bg-secondary focus:ring-primary focus:border-primary"
                     />
                 </div>
-                <button 
-                    onClick={() => alert('Add New User\n\nThis would open a form to manually create a new user account with admin privileges.')}
-                    className="bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:bg-primary-hover transition-colors flex items-center"
-                >
+                <button className="bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:bg-primary-hover transition-colors flex items-center">
                     <Icon name="plus" className="h-5 w-5 mr-2" />
                     Add User
                 </button>
@@ -85,12 +82,7 @@ const UserManagementView: React.FC = () => {
                                 <td className="px-6 py-4">{user.subscriptionPlan}</td>
                                 <td className="px-6 py-4">{user.lastLogin}</td>
                                 <td className="px-6 py-4">
-                                    <button 
-                                        onClick={() => alert(`View User Details\n\nUser: ${user.name}\nEmail: ${user.email}\nID: ${user.id}\nKYC: ${user.kycStatus}\nPlan: ${user.subscriptionPlan}\n\nThis would open the full user profile with account details, trading history, and admin controls.`)}
-                                        className="font-medium text-primary hover:underline"
-                                    >
-                                        View
-                                    </button>
+                                    <button className="font-medium text-primary hover:underline">View</button>
                                 </td>
                             </tr>
                         ))}
