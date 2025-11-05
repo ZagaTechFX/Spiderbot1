@@ -4,7 +4,7 @@ import Card from '../../components/Card';
 import ToggleSwitch from '../../components/ToggleSwitch';
 import { UserStrategy, StrategyTemplate, DcaConfig, GridConfig, AlgoStrategyConfig, CandlestickData, StrategyType, NormalGridConfig, NormalDCAConfig, TrendFollowingConfig, MeanReversionConfig, VolatilityBreakoutConfig, TradingViewWebhookConfig, DipAnalyserConfig, SignalBotConfig } from '../../types';
 import Icon from '../../components/Icon';
-import AdvancedTradingChart from '../../components/AdvancedTradingChart';
+import TradingViewWidget from '../../components/TradingViewWidget';
 import { ThemeContext } from '../../App';
 import { UTCTimestamp } from 'lightweight-charts';
 import NormalGridConfigPanel from '../../components/strategies/NormalGridConfigPanel';
@@ -771,19 +771,74 @@ const StrategiesView: React.FC = () => {
                  <button onClick={() => setView('list')} className="mb-4 text-sm font-semibold text-primary hover:underline flex items-center">
                     <Icon name="chevronLeft" className="h-4 w-4 mr-1" /> Back to Strategies
                 </button>
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 lg:gap-8">
                     <div className="lg:col-span-4 xl:col-span-3">
                         {renderConfigPanel()}
                     </div>
-                    <div className="lg:col-span-8 xl:col-span-9">
-                         <Card className="h-[80vh] p-0 overflow-hidden">
-                            <AdvancedTradingChart 
-                                data={mockCandlestickData} 
-                                theme={theme}
-                                symbol={currentPair}
+                    <div className="lg:col-span-8 xl:col-span-9 space-y-4 sm:space-y-6">
+                        <Card className="p-4 sm:p-6">
+                            <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-2 sm:mb-3">
+                                Professional Trading Charts
+                            </h3>
+                            <p className="text-sm sm:text-base text-gray-600 dark:text-dark-text-secondary mb-4 sm:mb-6">
+                                Powered by TradingView, the world's leading charting platform. Analyze markets with advanced technical indicators, drawing tools, and real-time data.
+                            </p>
+                            
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-4 sm:mb-6">
+                                <div>
+                                    <h4 className="font-semibold text-gray-900 dark:text-white mb-2 sm:mb-3 flex items-center text-sm sm:text-base">
+                                        <span className="text-green-500 mr-2">✓</span> Features
+                                    </h4>
+                                    <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-gray-600 dark:text-dark-text-secondary">
+                                        <li className="flex items-start">
+                                            <span className="mr-2">•</span>
+                                            <span>Real-time price data</span>
+                                        </li>
+                                        <li className="flex items-start">
+                                            <span className="mr-2">•</span>
+                                            <span>50+ technical indicators</span>
+                                        </li>
+                                        <li className="flex items-start">
+                                            <span className="mr-2">•</span>
+                                            <span>Multiple timeframes</span>
+                                        </li>
+                                        <li className="flex items-start">
+                                            <span className="mr-2">•</span>
+                                            <span>Drawing tools & patterns</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                                
+                                <div>
+                                    <h4 className="font-semibold text-gray-900 dark:text-white mb-2 sm:mb-3 flex items-center text-sm sm:text-base">
+                                        <span className="text-blue-500 mr-2">📈</span> Indicators Included
+                                    </h4>
+                                    <ul className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm text-gray-600 dark:text-dark-text-secondary">
+                                        <li className="flex items-start">
+                                            <span className="mr-2">•</span>
+                                            <span>RSI (Relative Strength Index)</span>
+                                        </li>
+                                        <li className="flex items-start">
+                                            <span className="mr-2">•</span>
+                                            <span>Moving Averages (MA)</span>
+                                        </li>
+                                        <li className="flex items-start">
+                                            <span className="mr-2">•</span>
+                                            <span>MACD</span>
+                                        </li>
+                                        <li className="flex items-start">
+                                            <span className="mr-2">•</span>
+                                            <span>Bollinger Bands</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </Card>
+                        
+                        <Card className="h-[500px] sm:h-[600px] lg:h-[700px] p-0 overflow-hidden">
+                            <TradingViewWidget 
+                                symbol={currentPair.replace('/', '')}
                                 exchange="BINANCE"
-                                timeframe={timeframe}
-                                {...chartVisuals}
                             />
                         </Card>
                     </div>
