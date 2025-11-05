@@ -2,11 +2,10 @@
 import React, { useState, useContext } from 'react';
 import Card from '../../components/Card';
 import ToggleSwitch from '../../components/ToggleSwitch';
-import { UserStrategy, StrategyTemplate, DcaConfig, GridConfig, AlgoStrategyConfig, CandlestickData, StrategyType, NormalGridConfig, NormalDCAConfig, TrendFollowingConfig, MeanReversionConfig, VolatilityBreakoutConfig, TradingViewWebhookConfig, DipAnalyserConfig, SignalBotConfig } from '../../types';
+import { UserStrategy, StrategyTemplate, DcaConfig, GridConfig, AlgoStrategyConfig, CandlestickData, StrategyType, NormalGridConfig, NormalDCAConfig, TrendFollowingConfig, MeanReversionConfig, VolatilityBreakoutConfig, TradingViewWebhookConfig, DipAnalyserConfig, SignalBotConfig, UTCTimestamp } from '../../types';
 import Icon from '../../components/Icon';
 import TradingViewWidget from '../../components/TradingViewWidget';
 import { ThemeContext } from '../../App';
-import { UTCTimestamp } from 'lightweight-charts';
 import NormalGridConfigPanel from '../../components/strategies/NormalGridConfigPanel';
 import NormalDCAConfigPanel from '../../components/strategies/NormalDCAConfigPanel';
 import TrendFollowingConfigPanel from '../../components/strategies/TrendFollowingConfigPanel';

@@ -1,4 +1,4 @@
-import { UTCTimestamp } from 'lightweight-charts';
+export type UTCTimestamp = number;
 
 export type Theme = 'light' | 'dark';
 export type UserRole = 'user' | 'admin';
