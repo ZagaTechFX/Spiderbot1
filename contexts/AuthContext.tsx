@@ -1,67 +1,69 @@
-import React, { createContext, useState, useContext, ReactNode } from 'react';
+import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 import { User, AuthContextType } from '../types';
+import { authService } from '../services/authService';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const DEMO_USERS: { [key: string]: { password: string; user: User } } = {
-  'demo': {
-    password: 'demo',
-    user: {
-      id: 'user-1',
-      username: 'demo',
-      role: 'user',
-      name: 'Demo User',
-      email: 'demo@spiderbot.io',
-      avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=demo',
-      kycStatus: 'Verified',
-      subscriptionPlan: 'Pro',
-      lastLogin: new Date().toISOString()
-    }
-  },
-  'admin': {
-    password: 'admin',
-    user: {
-      id: 'admin-1',
-      username: 'admin',
-      role: 'admin',
-      name: 'Admin User',
-      email: 'admin@spiderbot.io',
-      avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=admin',
-      kycStatus: 'Verified',
-      subscriptionPlan: 'Enterprise',
-      lastLogin: new Date().toISOString()
-    }
-  }
-};
-
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const login = async (username: string, password: string): Promise<boolean> => {
-    const userEntry = DEMO_USERS[username.toLowerCase()];
-    if (userEntry && userEntry.password === password) {
-      setUser(userEntry.user);
-      localStorage.setItem('spiderbot_user', JSON.stringify(userEntry.user));
-      return true;
-    }
-    return false;
-  };
-
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('spiderbot_user');
-  };
-
-  React.useEffect(() => {
-    const savedUser = localStorage.getItem('spiderbot_user');
-    if (savedUser) {
-      try {
-        setUser(JSON.parse(savedUser));
-      } catch (e) {
-        localStorage.removeItem('spiderbot_user');
+  const login = async (email: string, password: string): Promise<boolean> => {
+    try {
+      await authService.signInWithPassword(email, password);
+      await authService.updateLastLogin();
+      const currentUser = await authService.getCurrentUser();
+      if (currentUser) {
+        setUser(currentUser);
+        return true;
       }
+      return false;
+    } catch (error) {
+      console.error('Login error:', error);
+      return false;
     }
+  };
+
+  const logout = async () => {
+    try {
+      await authService.signOut();
+      setUser(null);
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
+
+  useEffect(() => {
+    setIsLoading(true);
+
+    (async () => {
+      try {
+        const currentUser = await authService.getCurrentUser();
+        setUser(currentUser);
+      } catch (error) {
+        console.error('Failed to get current user:', error);
+        setUser(null);
+      } finally {
+        setIsLoading(false);
+      }
+    })();
+
+    const subscription = authService.onAuthStateChange((updatedUser) => {
+      setUser(updatedUser);
+    });
+
+    return () => {
+      subscription?.unsubscribe();
+    };
   }, []);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen dark:bg-gray-900">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+      </div>
+    );
+  }
 
   return (
     <AuthContext.Provider value={{ user, login, logout, isAuthenticated: !!user }}>

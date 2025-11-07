@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import Icon from '../components/Icon';
 
 const UserLoginPage: React.FC = () => {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -16,12 +16,12 @@ const UserLoginPage: React.FC = () => {
     setError('');
     setIsLoading(true);
 
-    const success = await login(username, password);
-    
+    const success = await login(email, password);
+
     if (success) {
       navigate('/dashboard');
     } else {
-      setError('Invalid username or password');
+      setError('Invalid email or password');
       setIsLoading(false);
     }
   };
@@ -47,14 +47,14 @@ const UserLoginPage: React.FC = () => {
           <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
             <div>
               <label className="block text-xs sm:text-sm font-medium text-dark-text-secondary mb-2">
-                Username
+                Email
               </label>
               <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="w-full bg-dark-bg-secondary border border-dark-border rounded-lg px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-                placeholder="Enter username"
+                placeholder="Enter email"
                 required
                 autoFocus
               />
@@ -98,12 +98,8 @@ const UserLoginPage: React.FC = () => {
           </form>
 
           <div className="mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-dark-border">
-            <p className="text-xs sm:text-sm text-dark-text-secondary text-center mb-3">Demo Credentials</p>
-            <div className="bg-dark-bg-secondary rounded-lg p-2.5 sm:p-3">
-              <p className="font-semibold text-white mb-1 text-xs sm:text-sm">Regular User:</p>
-              <p className="text-xs text-dark-text-secondary">Username: <span className="text-primary font-mono">demo</span></p>
-              <p className="text-xs text-dark-text-secondary">Password: <span className="text-primary font-mono">demo</span></p>
-            </div>
+            <p className="text-xs sm:text-sm text-dark-text-secondary text-center mb-3">Need an account?</p>
+            <p className="text-xs text-dark-text-secondary text-center">Contact support to create a new account</p>
             <div className="mt-4 text-center">
               <a href="/admin" className="text-xs text-primary hover:text-primary-hover transition-colors">
                 Admin Portal →

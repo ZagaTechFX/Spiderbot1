@@ -4,20 +4,26 @@ import { useAuth } from '../contexts/AuthContext';
 import Icon from '../components/Icon';
 
 const AdminLoginPage: React.FC = () => {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, user } = useAuth();
   const navigate = useNavigate();
+
+  React.useEffect(() => {
+    if (user?.role === 'admin') {
+      navigate('/admin/dashboard');
+    }
+  }, [user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
 
-    const success = await login(username, password);
-    
+    const success = await login(email, password);
+
     if (success) {
       navigate('/admin/dashboard');
     } else {
@@ -49,14 +55,14 @@ const AdminLoginPage: React.FC = () => {
           <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
             <div>
               <label className="block text-xs sm:text-sm font-medium text-dark-text-secondary mb-2">
-                Admin Username
+                Admin Email
               </label>
               <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="w-full bg-dark-bg-secondary border border-warning/30 rounded-lg px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-warning focus:border-transparent"
-                placeholder="Enter admin username"
+                placeholder="Enter admin email"
                 required
                 autoFocus
               />
@@ -100,12 +106,8 @@ const AdminLoginPage: React.FC = () => {
           </form>
 
           <div className="mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-warning/20">
-            <p className="text-xs sm:text-sm text-dark-text-secondary text-center mb-3">Demo Credentials</p>
-            <div className="bg-dark-bg-secondary border border-warning/20 rounded-lg p-2.5 sm:p-3">
-              <p className="font-semibold text-warning mb-1 text-xs sm:text-sm">Admin User:</p>
-              <p className="text-xs text-dark-text-secondary">Username: <span className="text-warning font-mono">admin</span></p>
-              <p className="text-xs text-dark-text-secondary">Password: <span className="text-warning font-mono">admin</span></p>
-            </div>
+            <p className="text-xs sm:text-sm text-dark-text-secondary text-center mb-3">Admin Access Only</p>
+            <p className="text-xs text-dark-text-secondary text-center">Only admin accounts can access this portal</p>
             <div className="mt-4 text-center">
               <a href="/login" className="text-xs text-primary hover:text-primary-hover transition-colors">
                 ← User Portal
